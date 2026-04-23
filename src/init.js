@@ -1,10 +1,54 @@
 import InitializeCanvases from "./InitializeCanvases.js";
+import GameController from "./GameController.js";
+import DataLoader from "./DataLoader.js";
+import View from "./View.js";
+import Game from "./Game.js";
 
-// LOAD CANVAS ELEMENTS //
+// INITIALIZE CANVAS ELEMENTS //
 
-const fgCanvas = InitializeCanvases.loadFgCanvas();
-const fgCtx = InitializeCanvases.get2dContext(fgCanvas);
+const fgCanvasId = 'foreground-canvas';
+const fgCanvasType = '2d';
+const fgIsGl = false;
 
-// SCALE CANVAS ELEMENTS
+const bgCanvasId = 'background-canvas';
+const bgCanvasType = '2d';
+const bgIsGl = false;
 
-InitializeCanvases.scaleCanvas(fgCanvas, fgCtx);
+const glCanvasId = 'shader-canvas';
+const glCanvasType = 'webgl';
+const glIsGl = true;
+
+const bgCanvas = InitializeCanvases.loadCanvas(bgCanvasId);
+const bgCtx = InitializeCanvases.getContext(bgCanvas, bgCanvasType);
+
+const glCanvas = InitializeCanvases.loadCanvas(glCanvasId);
+const glCtx = InitializeCanvases.getContext(glCanvas, glCanvasType);
+
+const fgCanvas = InitializeCanvases.loadCanvas(fgCanvasId);
+const fgCtx = InitializeCanvases.getContext(fgCanvas, fgCanvasType);
+
+// SCALE CANVAS ELEMENTS //
+
+InitializeCanvases.scaleCanvas(bgCanvas, bgCtx, bgIsGl);
+InitializeCanvases.scaleCanvas(glCanvas, glCtx, glIsGl);
+InitializeCanvases.scaleCanvas(fgCanvas, fgCtx, fgIsGl);
+
+// LOAD INITIAL DATA //
+
+const dataloader = new DataLoader();
+
+// INITIALIZE VIEW //
+
+const view = new View();
+
+// INITIALIZE GAME //
+
+const game = new Game();
+
+const gameController = new GameController(
+    game, view, dataloader, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx
+);
+
+gameController.setup();
+
+// RUN GAME //

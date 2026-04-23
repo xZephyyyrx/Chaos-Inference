@@ -12,15 +12,15 @@ export default class InitializeCanvases {
     static canvasWidth = window.innerWidth * this.margin;
     static canvasHeight = window.innerHeight * this.margin;
 
-    static loadFgCanvas() {
-        return document.getElementById('foreground-canvas');
+    static loadCanvas(canvasId) {
+        return document.getElementById(`${canvasId}`);
     }
 
-    static get2dContext(canvas) {
-        return canvas.getContext('2d');
+    static getContext(canvas, canvasType) {
+        return canvas.getContext(`${canvasType}`);
     }
 
-    static scaleCanvas(canvas, ctx) {
+    static scaleCanvas(canvas, ctx, isGl) {
     
         // Defines the initial width and height based on the aspect ratio
         let width = this.canvasWidth;
@@ -42,6 +42,9 @@ export default class InitializeCanvases {
         canvas.height = height * this * this.dpr;
 
         // Contents of the canvas are scaled for high-res monitors
-        ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        // Transformation is not applied to webgl canvas
+        if (!isGl) {
+            ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        }
     }
 }

@@ -11,16 +11,28 @@ body {
     background-color: #000;
 }
 
-#canvas-div {
-    display: flex;
-    justify-content: center;
-}
-
 /* INITIAL CANVAS SETUP */
 
+#canvas-div {
+    display: grid;
+    place-items: center;
+}
+
 canvas {
-    margin: auto;
     border: 1px solid #fff;
+    grid-area: 1/1;
+}
+
+#background-canvas {
+    z-index: 1;
+}
+
+#shader-canvas {
+    z-index: 2;
+}
+
+#foreground-canvas {
+    z-index: 3;
 }
 
 /* TEXT STYLES */
