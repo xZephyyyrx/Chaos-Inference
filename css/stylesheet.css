@@ -1,4 +1,40 @@
+/* SETUP */
+
 * {
     padding: 0;
     margin: 0;
+}
+
+/* LAYOUT AND COLOR */
+
+body {
+    background-color: #000;
+}
+
+#canvas-div {
+    display: flex;
+    justify-content: center;
+}
+
+/* INITIAL CANVAS SETUP */
+
+canvas {
+    margin: auto;
+    border: 1px solid #fff;
+}
+
+/* TEXT STYLES */
+
+@font-face {
+    font-family: 'PacMan1980';
+    src: url('../fonts/Pac-Man1980-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+h1 {
+    font-family: 'PacMan1980';
+    text-align: center;
+    color: #fff;
+    margin: 1em;
 }
