@@ -1,5 +1,5 @@
 export default class DataLoader {
-    #filepathPrefix = '../data/';
+    #filepathPrefix = 'data/';
     #mapGridFilepath = 'maps/';
     #mapTilesetFilepath = 'img/level/';
 
