@@ -41,10 +41,13 @@ const dataloader = new DataLoader();
 
 // INITIALIZE VIEW //
 
+// Used to ensure the canvas displays the same at different resolutions
+const clientWidth = fgCanvas.clientWidth;
+
 const view = new View(
     InitializeCanvases.scaledCanvasWidth, 
     InitializeCanvases.scaledCanvasHeight,
-    InitializeCanvases.dpr,
+    clientWidth,
     bgCanvas, 
     bgCtx, 
     glCanvas, 

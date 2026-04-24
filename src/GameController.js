@@ -13,10 +13,13 @@ export default class GameController {
 
     async setup() {
         // TEST DATA FOR LOADING RENDERING MAPS //
-        let mapData = await this.dataloader.importTextData('level1');
-        mapData = this.dataloader.parseMapData(mapData);
+        let gridmap = await this.dataloader.importText('level1grid');
+        gridmap = this.dataloader.parseMapData(gridmap);
 
-        let tilesetData = await this.dataloader.importTilesetData('tempFgTileSheet.webp');
-        this.view.renderMap(mapData, tilesetData);
+        let tileset = await this.dataloader.importTileset('tempFgTileSheet');
+
+        let tilesetMap = await this.dataloader.importTilesetMap('level1tilemap');
+        
+        this.view.renderMap(gridmap, tileset, tilesetMap);
     }
 }
