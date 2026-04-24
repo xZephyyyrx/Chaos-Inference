@@ -2,10 +2,12 @@ export default class DataLoader {
     #filepathPrefix = 'data/';
 
     // Folder containing level gridmaps
-    #gridmapFilepath = 'maps/';
+    #gridmapFilepath = 'gridmaps/';
+
+    #gridmapFiletype = '.txt';
 
     // Folder containing level tileset images
-    #tilesetFilepath = 'img/level/';
+    #tilesetFilepath = 'img/tilesets/';
 
     // Appends the correct filetype to tileset filenames
     #tilesetFiletype = '.webp';
@@ -14,17 +16,18 @@ export default class DataLoader {
     #tilemapFilepath = 'tilemaps/';
 
     // Appends the correct filetype to tilemap filenames
-    #tilesetMapFiletype = '.json';
+    #tilemapFiletype = '.json';
     
 
     async importText(filename) {
         try {
             const response = await fetch(`${this.#filepathPrefix}` +
                                          `${this.#gridmapFilepath}` +
-                                         `${filename}.txt`);
+                                         `${filename}` +
+                                         `${this.#gridmapFiletype}`);
 
             if (!response.ok) {
-                throw new Error(`Failed to load ${filename}.txt!`);
+                throw new Error(`Failed to load ${filename}${this.#gridmapFiletype}!`);
             }
 
             return await response.text();
@@ -41,8 +44,10 @@ export default class DataLoader {
                       `${filename}` +
                       `${this.#tilesetFiletype}`;
 
-        await new Promise(resolve => {
+        await new Promise((resolve, reject) => {
             tileset.onload = resolve;
+            tileset.onerror = () => 
+                reject(new Error(`Failed to load ${filename}${this.#tilesetFiletype}!`));
         });
 
         return tileset;
@@ -53,10 +58,10 @@ export default class DataLoader {
             const response = await fetch(`${this.#filepathPrefix}` +
                                          `${this.#tilemapFilepath}` +
                                          `${filename}` +
-                                         `${this.#tilesetMapFiletype}`);
+                                         `${this.#tilemapFiletype}`);
 
             if (!response.ok) {
-                throw new Error(`Failed to load ${filename}.json!`)
+                throw new Error(`Failed to load ${filename}${this.#tilemapFiletype}!`)
             }
 
             return await response.json();

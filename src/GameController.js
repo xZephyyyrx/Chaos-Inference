@@ -12,12 +12,17 @@ export default class GameController {
     }
 
     async setup() {
-        // TEST DATA FOR LOADING RENDERING MAPS //
+        // TEST DATA FOR LOADING & RENDERING MAPS //
         let gridmap = await this.dataloader.importText('level1grid');
         gridmap = this.dataloader.parseMapData(gridmap);
 
-        let tileset = await this.dataloader.importTileset('tempFgTileSheet');
-
+        let tileset;
+        try {
+            tileset = await this.dataloader.importTileset('appearancetest');
+        } catch (error) {
+            console.log(error);
+        }
+        
         let tilesetMap = await this.dataloader.importTilesetMap('level1tilemap');
         
         this.view.renderMap(gridmap, tileset, tilesetMap);

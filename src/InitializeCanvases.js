@@ -51,6 +51,7 @@ export default class InitializeCanvases {
         // Contents of the canvas are scaled for high-res monitors
         // Transformation is not applied to webgl canvas
         if (!isGl) {
+            ctx.imageSmoothingEnabled = false;
             ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
         }
     }
