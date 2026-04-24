@@ -1,4 +1,5 @@
 export default class InitializeCanvases {
+    
     // How much of the page the canvas fills
     static margin = 0.8;
 
@@ -9,8 +10,13 @@ export default class InitializeCanvases {
     static aspectRatio = 16 / 9;
 
     // Base canvas width and height are defined
-    static canvasWidth = window.innerWidth * this.margin;
-    static canvasHeight = window.innerHeight * this.margin;
+    static baseCanvasWidth = window.innerWidth * this.margin;
+    static baseCanvasHeight = window.innerHeight * this.margin;
+
+    // Canvas dimensions scaled to correct aspect ratio
+    static scaledCanvasWidth;
+    static scaledCanvasHeight;
+
 
     static loadCanvas(canvasId) {
         return document.getElementById(`${canvasId}`);
@@ -20,27 +26,28 @@ export default class InitializeCanvases {
         return canvas.getContext(`${canvasType}`);
     }
 
-    static scaleCanvas(canvas, ctx, isGl) {
-    
-        // Defines the initial width and height based on the aspect ratio
-        let width = this.canvasWidth;
-        let height = width / this.aspectRatio;
+    static setCanvasDimensions() {
+
+        // Defines the correct canvas width and height based on the aspect ratio
+        this.scaledCanvasWidth = this.baseCanvasWidth;
+        this.scaledCanvasHeight = this.scaledCanvasWidth / this.aspectRatio;
 
         // If the aspect ratio produces too tall a canvas, the width is 
         // adjusted in relation to the max height according to the aspect ratio
-        if (height > this.canvasHeight) {
-            height = this.canvasHeight;
-            width = height * this.aspectRatio;
+        if (this.scaledCanvasHeight > this.baseCanvasHeight) {
+            this.scaledCanvasHeight = this.baseCanvasHeight;
+            this.scaledCanvasWidth = this.scaledCanvasHeight * this.aspectRatio;
         }
+    }
+
+    static scaleCanvas(canvas, ctx, isGl) {
 
         // The visual size of the canvas is defined
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
-
+        canvas.style.width = this.scaledCanvasWidth + 'px';
+        canvas.style.height = this.scaledCanvasHeight + 'px';
         // The pixels contained in the canvas are defined
-        canvas.width = width * this.dpr;
-        canvas.height = height * this * this.dpr;
-
+        canvas.width = this.scaledCanvasWidth * this.dpr;
+        canvas.height = this.scaledCanvasHeight * this.dpr;
         // Contents of the canvas are scaled for high-res monitors
         // Transformation is not applied to webgl canvas
         if (!isGl) {

@@ -29,6 +29,8 @@ const fgCtx = InitializeCanvases.getContext(fgCanvas, fgCanvasType);
 
 // SCALE CANVAS ELEMENTS //
 
+InitializeCanvases.setCanvasDimensions();
+
 InitializeCanvases.scaleCanvas(bgCanvas, bgCtx, bgIsGl);
 InitializeCanvases.scaleCanvas(glCanvas, glCtx, glIsGl);
 InitializeCanvases.scaleCanvas(fgCanvas, fgCtx, fgIsGl);
@@ -39,16 +41,23 @@ const dataloader = new DataLoader();
 
 // INITIALIZE VIEW //
 
-const view = new View();
+const view = new View(
+    InitializeCanvases.scaledCanvasWidth, 
+    InitializeCanvases.scaledCanvasHeight,
+    InitializeCanvases.dpr,
+    bgCanvas, 
+    bgCtx, 
+    glCanvas, 
+    glCtx, 
+    fgCanvas, 
+    fgCtx
+);
 
 // INITIALIZE GAME //
 
 const game = new Game();
 
-const gameController = new GameController(
-    game, view, dataloader, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx
-);
-
+const gameController = new GameController(game, view, dataloader);
 gameController.setup();
 
 // RUN GAME //

@@ -1,0 +1,1 @@
+-- Ensure imported map data contains no leading or trailing blank spaces/lines

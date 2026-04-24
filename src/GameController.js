@@ -1,8 +1,6 @@
 export default class GameController {
-    #currentLevel;
 
-    constructor(game, view, dataloader, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx) {
-
+    constructor(game, view, dataloader) {
         // Game Logic //
         this.game = game;
 
@@ -11,17 +9,14 @@ export default class GameController {
 
         // Data Loader //
         this.dataloader = dataloader;
-
-        // Canvases //
-        this.bgCanvas = bgCanvas;
-        this.bgCtx = bgCtx;
-        this.glCanvas = glCanvas;
-        this.glCtx = glCtx;
-        this.fgCanvas = fgCanvas;
-        this.fgCtx = fgCtx;
     }
 
-    setup() {
-        this.dataloader.importTextData('levelinfo');
+    async setup() {
+        // TEST DATA FOR LOADING RENDERING MAPS //
+        let mapData = await this.dataloader.importTextData('level1');
+        mapData = this.dataloader.parseMapData(mapData);
+
+        let tilesetData = await this.dataloader.importTilesetData('tempFgTileSheet.webp');
+        this.view.renderMap(mapData, tilesetData);
     }
 }
