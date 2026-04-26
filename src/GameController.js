@@ -16,15 +16,23 @@ export default class GameController {
         let gridmap = await this.dataloader.importText('level1grid');
         gridmap = this.dataloader.parseMapData(gridmap);
 
-        let tileset;
+        let fgTileset;
+        let bgTileset;
+
         try {
-            tileset = await this.dataloader.importTileset('appearancetest');
+            fgTileset = await this.dataloader.importTileset('appearancetest');
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            bgTileset = await this.dataloader.importTileset('bgappearancetestdark');
         } catch (error) {
             console.log(error);
         }
         
-        let tilesetMap = await this.dataloader.importTilesetMap('level1tilemap');
+        let fgTilesetMap = await this.dataloader.importTilesetMap('level1fgtilemap');
         
-        this.view.renderMap(gridmap, tileset, tilesetMap);
+        this.view.renderMap(gridmap, fgTileset, fgTilesetMap, bgTileset);
     }
 }
