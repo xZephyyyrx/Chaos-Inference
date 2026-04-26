@@ -1,10 +1,12 @@
 export default class DataLoader {
     #filepathPrefix = 'data/';
 
+    #shaderFilepath = 'shaders/';
+
     // Folder containing level gridmaps
     #gridmapFilepath = 'gridmaps/';
 
-    #gridmapFiletype = '.txt';
+    #textFiletype = '.txt';
 
     // Folder containing level tileset images
     #tilesetFilepath = 'img/tilesets/';
@@ -18,16 +20,23 @@ export default class DataLoader {
     // Appends the correct filetype to tilemap filenames
     #tilemapFiletype = '.json';
     
+    async importGridmap(filename) {
+        return await this.importText(this.#gridmapFilepath, filename);
+    }
 
-    async importText(filename) {
+    async importShaderData(filename) {
+        return await this.importText(this.#shaderFilepath, filename);
+    }
+
+    async importText(filepath, filename) {
         try {
             const response = await fetch(`${this.#filepathPrefix}` +
-                                         `${this.#gridmapFilepath}` +
+                                         `${filepath}` +
                                          `${filename}` +
-                                         `${this.#gridmapFiletype}`);
+                                         `${this.#textFiletype}`);
 
             if (!response.ok) {
-                throw new Error(`Failed to load ${filename}${this.#gridmapFiletype}!`);
+                throw new Error(`Failed to load ${filename}${this.#textFiletype}!`);
             }
 
             return await response.text();

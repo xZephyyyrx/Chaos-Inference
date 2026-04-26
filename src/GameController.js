@@ -13,7 +13,7 @@ export default class GameController {
 
     async setup() {
         // TEST DATA FOR LOADING & RENDERING MAPS //
-        let gridmap = await this.dataloader.importText('level1grid');
+        let gridmap = await this.dataloader.importGridmap('level1grid');
         gridmap = this.dataloader.parseMapData(gridmap);
 
         let fgTileset;
@@ -26,7 +26,7 @@ export default class GameController {
         }
 
         try {
-            bgTileset = await this.dataloader.importTileset('bgappearancetestdark');
+            bgTileset = await this.dataloader.importTileset('bgappearancetest');
         } catch (error) {
             console.log(error);
         }

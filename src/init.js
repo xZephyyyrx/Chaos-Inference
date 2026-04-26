@@ -1,4 +1,5 @@
 import InitializeCanvases from "./InitializeCanvases.js";
+import CompileShaders from "./CompileShaders.js";
 import GameController from "./GameController.js";
 import DataLoader from "./DataLoader.js";
 import View from "./View.js";
@@ -39,6 +40,21 @@ InitializeCanvases.scaleCanvas(fgCanvas, fgCtx, fgIsGl);
 
 const dataloader = new DataLoader();
 
+// CREATE AND COMPILE INITIAL SHADERS //
+
+async function compileShaders() {
+
+    const vertexShader = await dataloader.importShaderData('vertexShader');
+    const fragmentShader = await dataloader.importShaderData('fragmentShader');
+
+    try {
+        CompileShaders.initializeShaders(glCanvas, glCtx, vertexShader, fragmentShader);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
 // INITIALIZE VIEW //
 
 // Used to ensure the canvas displays the same at different resolutions
@@ -52,7 +68,7 @@ const view = new View(
     bgCtx, 
     glCanvas, 
     glCtx, 
-    fgCanvas, 
+    fgCanvas,
     fgCtx
 );
 
@@ -61,6 +77,9 @@ const view = new View(
 const game = new Game();
 
 const gameController = new GameController(game, view, dataloader);
+
+await compileShaders();
+
 gameController.setup();
 
 // RUN GAME //
