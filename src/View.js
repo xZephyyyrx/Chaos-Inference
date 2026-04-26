@@ -19,10 +19,11 @@ export default class View {
     // Specifies the size of each tile in the spritesheet
     #tilesetSpriteSize = 16 * this.#tileUpscale;
 
-    constructor(canvasWidth, canvasHeight, clientWidth, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx) {
+    constructor(canvasWidth, canvasHeight, clientWidth, shaderData, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx) {
         this.canvasWidth = canvasWidth ;
         this.canvasHeight = canvasHeight;
         this.#fgTileDisplaySize = clientWidth / this.#fgTileDisplaySize;
+        this.shaderData = shaderData;
         this.bgCanvas = bgCanvas;
         this.bgCtx = bgCtx;
         this.glCanvas = glCanvas;
@@ -34,7 +35,6 @@ export default class View {
     // Takes the map grid, the level tileset, and the tileset map and
     // renders the foreground tiles based on their location
     renderMap(gridmap, fgTileset, fgTilesetMap, bgTileset) {
-
         this.renderTiles(this.fgCtx, fgTileset, fgTilesetMap, gridmap);
         this.renderTiles(this.bgCtx, bgTileset);
     }
@@ -85,5 +85,24 @@ export default class View {
             context.fillStyle = bgPattern;
             context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
         }
+    }
+
+    updateShader(time) {
+        const gl = this.glCtx;
+
+        gl.useProgram(this.shaderData.program);
+
+        gl.uniform1f(this.shaderData.uniforms.time, time);
+        gl.uniform2f(
+            this.shaderData.uniforms.resolution,
+            this.glCanvas.width,
+            this.glCanvas.height
+        );
+
+        gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
+
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 }

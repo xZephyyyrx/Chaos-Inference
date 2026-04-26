@@ -36,7 +36,7 @@ export default class CompileShaders {
             throw new Error(gl.getProgramInfoLog(program));
         }
 
-        gl.useProgram(program);
+        //gl.useProgram(program);
 
         // Passes the screen resolution as a uniform
         const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
@@ -51,15 +51,16 @@ export default class CompileShaders {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(CompileShaders.#positions), gl.STATIC_DRAW);
     
         const positionLocation = gl.getAttribLocation(program, 'a_position');
-
         gl.enableVertexAttribArray(positionLocation);
         gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        return {
+            program,
+            uniforms: {
+                resolution: gl.getUniformLocation(program, "u_resolution"),
+                time: gl.getUniformLocation(program, "u_time")
+            }
+        }
     }
 
     static createShader(gl, type, source) {

@@ -9,6 +9,9 @@ export default class GameController {
 
         // Data Loader //
         this.dataloader = dataloader;
+
+        // Used to increment time for various game elements
+        this.startTime = performance.now();
     }
 
     async setup() {
@@ -34,5 +37,16 @@ export default class GameController {
         let fgTilesetMap = await this.dataloader.importTilesetMap('level1fgtilemap');
         
         this.view.renderMap(gridmap, fgTileset, fgTilesetMap, bgTileset);
+
+        this.renderLoop();
+    }
+
+    // Temp render loop to test shader patterns
+    renderLoop = () => {
+        const time = (performance.now() - this.startTime) * 0.001;
+
+        this.view.updateShader(time);
+
+        requestAnimationFrame(this.renderLoop);
     }
 }

@@ -48,12 +48,13 @@ async function compileShaders() {
     const fragmentShader = await dataloader.importShaderData('fragmentShader');
 
     try {
-        CompileShaders.initializeShaders(glCanvas, glCtx, vertexShader, fragmentShader);
+        return CompileShaders.initializeShaders(glCanvas, glCtx, vertexShader, fragmentShader);
     } catch (error) {
         console.log(error);
     }
 }
 
+const shaderData = await compileShaders();
 
 // INITIALIZE VIEW //
 
@@ -64,6 +65,7 @@ const view = new View(
     InitializeCanvases.scaledCanvasWidth, 
     InitializeCanvases.scaledCanvasHeight,
     clientWidth,
+    shaderData,
     bgCanvas, 
     bgCtx, 
     glCanvas, 
@@ -77,8 +79,6 @@ const view = new View(
 const game = new Game();
 
 const gameController = new GameController(game, view, dataloader);
-
-await compileShaders();
 
 gameController.setup();
 
