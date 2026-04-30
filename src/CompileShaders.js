@@ -36,8 +36,6 @@ export default class CompileShaders {
             throw new Error(gl.getProgramInfoLog(program));
         }
 
-        //gl.useProgram(program);
-
         // Passes the screen resolution as a uniform
         const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
 
