@@ -1,6 +1,10 @@
+import Player from "./Player.js";
 import Tile from "./Tile.js";
+import Vector from "./Vector.js";
 
 export default class ObjectParser {
+
+    static playerChar = '@';
 
     static directionKey = Object.freeze({
         TOPLEFT: 'topLeft',
@@ -58,5 +62,19 @@ export default class ObjectParser {
         }
 
         return tile;
+    }
+
+    static parsePlayerLocation(gridmap) {
+        let player;
+
+        for (let y = 0; y < gridmap.length; y++) {
+            for (let x = 0; x < gridmap[y].length; x++) {
+                if (gridmap[y][x] === ObjectParser.playerChar) {
+                    player = new Player(new Vector(x, y));
+                }
+            }
+        }
+
+        return player;
     }
 }

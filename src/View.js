@@ -1,5 +1,6 @@
 export default class View {
 
+
     // Marks by how much each sprite has been upscaled
     #tileUpscale = 10;
 
@@ -28,10 +29,20 @@ export default class View {
         this.fgCtx = fgCtx;
     }
 
-    renderAll(startTime, bgTileset) {
-        const time = (performance.now() - startTime) * 0.001;
-        this.renderBgTiles(bgTileset);
-        this.updateShader(time);
+    renderPlayer(sprite, pos, dimensions) {
+        this.fgCtx.drawImage(
+
+            // image
+            sprite,
+
+            // dx & dy
+            pos.x * this.#fgTileDisplaySize - ((dimensions.width-1)*this.#fgTileDisplaySize),
+            pos.y * this.#fgTileDisplaySize- ((dimensions.height-1)*this.#fgTileDisplaySize),
+
+            // dWidth & dHeight
+            dimensions.width * this.#fgTileDisplaySize,
+            dimensions.height * this.#fgTileDisplaySize
+        );
     }
 
     // Draws the foreground tiles based on the passed Level levelTiles
@@ -94,5 +105,9 @@ export default class View {
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    clearFg() {
+        this.fgCtx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
     }
 }

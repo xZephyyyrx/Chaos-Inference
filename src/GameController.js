@@ -4,10 +4,13 @@ export default class GameController {
     #bgTileset;
     #fgTileset;
     #fgTilesetMap;
+    #playerSprite;
     #game;
     #view;
     #dataloader;
-    #startTime;
+    #shaderTime;
+    #lastTime;
+    #activeKeys = {};
 
     constructor(game, view, dataloader) {
         // Game Logic //
@@ -20,7 +23,20 @@ export default class GameController {
         this.#dataloader = dataloader;
 
         // Used to increment time for various game elements
-        this.#startTime = performance.now();
+        this.#shaderTime = performance.now();
+        
+        // Used to decouple game logic from browser framerate
+        this.#lastTime = performance.now();
+
+        // KEYBINDS //
+
+        window.addEventListener("keydown", (e) => {
+            this.#activeKeys[e.key] = true;
+        });
+
+        window.addEventListener("keyup", (e) => {
+            this.#activeKeys[e.key] = false;
+        });
     }
 
     // TEST DATA FOR LOADING & RENDERING MAPS //
@@ -39,6 +55,12 @@ export default class GameController {
         } catch (error) {
             console.log(error);
         }
+
+        try {
+            this.#playerSprite = await this.#dataloader.importPlayerSprites('tempCharSprite');
+        } catch (error) {
+            console.log(error);
+        }
         
         this.#fgTilesetMap = await this.#dataloader.importTilesetMap('level1fgtilemap');
     }
@@ -47,26 +69,44 @@ export default class GameController {
     async setup() {
         await this.loadTestData();
 
-        this.runGame(this.#gridmap);
+        this.#game.loadLevel(this.#gridmap);
+        this.#view.renderFgTiles(
+            this.#game.getCurrentLevelTiles(),
+            this.#fgTileset, 
+            this.#fgTilesetMap
+        );
+
+        this.runGame(0);
     }
 
     // Main game loop
-    runGame(gridmap) {
-
-        // CHECK GAME STATE //
-        const gameLevel = this.#game.state.level;
-        if (gridmap) {
-            this.#game.loadLevel(gridmap);
-            this.#view.renderFgTiles(
-                this.#game.getCurrentLevelTiles(),
-                this.#fgTileset, 
-                this.#fgTilesetMap
-            );
-        }
-        
+    runGame(time = performance.now()) {
+        const deltaTime = (time - this.#lastTime) / 1000;
+        this.#lastTime = time;
 
         // UPDATE VIEW //
-        this.#view.renderAll(this.#startTime, this.#bgTileset);
-        requestAnimationFrame(() => this.runGame());
+
+        this.#view.clearFg();
+        this.#view.renderPlayer(
+            this.#playerSprite, 
+            this.#game.getPlayerPosition(), 
+            this.#game.getPlayerDimensions()
+        );
+        this.#view.renderFgTiles(
+            this.#game.getCurrentLevelTiles(),
+            this.#fgTileset, 
+            this.#fgTilesetMap
+        );
+        this.#view.renderBgTiles(this.#bgTileset);
+
+        this.#view.updateShader((performance.now() - this.#shaderTime) * 0.001);
+
+        // Read player inputs
+
+        this.#game.update(deltaTime, this.#activeKeys);
+
+        // LOOP //
+
+        requestAnimationFrame((t) => this.runGame(t));
     }
 }

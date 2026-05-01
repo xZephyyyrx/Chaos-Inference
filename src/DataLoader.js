@@ -6,13 +6,17 @@ export default class DataLoader {
     // Folder containing level gridmaps
     #gridmapFilepath = 'gridmaps/';
 
+    // Filetype for text files
     #textFiletype = '.txt';
+
+    // Folder containing player sprite images
+    #playerSpritesFilepath = 'img/char/';
 
     // Folder containing level tileset images
     #tilesetFilepath = 'img/tilesets/';
 
     // Appends the correct filetype to tileset filenames
-    #tilesetFiletype = '.webp';
+    #imageFiletype = '.webp';
 
     // Folder containing tile coordinates
     #tilemapFilepath = 'tilemaps/';
@@ -45,21 +49,28 @@ export default class DataLoader {
         }
     }
 
-    async importTileset(filename) {
+    async importPlayerSprites(filename) {
+        return await this.importImage(filename, this.#playerSpritesFilepath);
+    }
 
-        const tileset = new Image();
-        tileset.src = `${this.#filepathPrefix}` +
-                      `${this.#tilesetFilepath}` +
+    async importTileset(filename) {
+        return await this.importImage(filename, this.#tilesetFilepath);
+    }
+
+    async importImage(filename, filepath) {
+        const image = new Image();
+        image.src = `${this.#filepathPrefix}` +
+                      `${filepath}` +
                       `${filename}` +
-                      `${this.#tilesetFiletype}`;
+                      `${this.#imageFiletype}`;
 
         await new Promise((resolve, reject) => {
-            tileset.onload = resolve;
-            tileset.onerror = () => 
-                reject(new Error(`Failed to load ${filename}${this.#tilesetFiletype}!`));
+            image.onload = resolve;
+            image.onerror = () => 
+                reject(new Error(`Failed to load ${filename}${this.#imageFiletype}!`));
         });
 
-        return tileset;
+        return image;
     }
 
     async importTilesetMap(filename) {
