@@ -57,7 +57,7 @@ export default class GameController {
         }
 
         try {
-            this.#playerSprite = await this.#dataloader.importPlayerSprites('tempCharSprite');
+            this.#playerSprite = await this.#dataloader.importPlayerSprites('basicchar');
         } catch (error) {
             console.log(error);
         }

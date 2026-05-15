@@ -11,7 +11,7 @@ export default class View {
     #tileSize = 16;
 
     // Controls how many fg tiles display along the canvas width
-    #fgTileDisplaySize = 20;
+    #fgTileDisplaySize = 12;
 
     // Used when drawing the bg to scale the tiles correctly
     #bgTileDisplayScale = 1 / (this.#fgTileDisplaySize / 10);

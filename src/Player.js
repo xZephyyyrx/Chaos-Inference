@@ -4,8 +4,8 @@ export default class Player {
 
     // Player width & height in terms of tiles
     // 
-    #height = 2;
-    #width = 1;
+    #height = 1.5;
+    #width = 0.75;
 
     constructor(pos) {
         this.#pos = pos;
