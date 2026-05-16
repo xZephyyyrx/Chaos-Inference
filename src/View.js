@@ -11,7 +11,7 @@ export default class View {
     #tileSize = 16;
 
     // Controls how many fg tiles display along the canvas width
-    #fgTileDisplaySize = 12;
+    #fgTileDisplaySize = 16;
 
     // Used when drawing the bg to scale the tiles correctly
     #bgTileDisplayScale = 1 / (this.#fgTileDisplaySize / 10);
@@ -43,6 +43,18 @@ export default class View {
             dimensions.width * this.#fgTileDisplaySize,
             dimensions.height * this.#fgTileDisplaySize
         );
+
+        this.renderHitbox(pos, dimensions);
+    }
+
+    renderHitbox(pos, dimensions) {
+        this.fgCtx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+        this.fgCtx.fillRect(
+            pos.x * this.#fgTileDisplaySize - ((dimensions.width-1)*this.#fgTileDisplaySize),
+            pos.y * this.#fgTileDisplaySize- ((dimensions.height-1)*this.#fgTileDisplaySize),
+            dimensions.width * this.#fgTileDisplaySize,
+            dimensions.height * this.#fgTileDisplaySize
+        )
     }
 
     // Draws the foreground tiles based on the passed Level levelTiles

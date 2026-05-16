@@ -1,6 +1,7 @@
 import Level from "./Level.js";
 import ObjectParser from "./ObjectParser.js";
 import Vector from "./Vector.js";
+import Move from "./Move.js";
 
 export default class Game {
     #allLevels = [];
@@ -25,29 +26,14 @@ export default class Game {
 
     update(deltaTime, keys) {
 
-        // TO BE UPDATED USING THE MOVE CLASS
-        const speed = 7;
+        let newMove = new Move(
+            this.#currentLevel, 
+            this.#player,
+            keys,
+            deltaTime
+        )
 
-        let x = this.#player.pos.x;
-        let y = this.#player.pos.y;
-
-        if (keys['ArrowLeft']) {
-            x -= speed * deltaTime;
-        }
-
-        if (keys['ArrowRight']) {
-            x += speed * deltaTime;
-        }
-
-        if (keys['ArrowDown']) {
-            y += speed * deltaTime;
-        }
-
-        if (keys['ArrowUp']) {
-            y -= speed * deltaTime;
-        }
-
-        this.#player.pos = new Vector(x, y);
+        this.#player.pos = newMove.update();
     }
 
     // Retriving Player data

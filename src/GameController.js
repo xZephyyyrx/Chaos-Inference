@@ -87,15 +87,16 @@ export default class GameController {
         // UPDATE VIEW //
 
         this.#view.clearFg();
-        this.#view.renderPlayer(
-            this.#playerSprite, 
-            this.#game.getPlayerPosition(), 
-            this.#game.getPlayerDimensions()
-        );
         this.#view.renderFgTiles(
             this.#game.getCurrentLevelTiles(),
             this.#fgTileset, 
             this.#fgTilesetMap
+        );
+
+        this.#view.renderPlayer(
+            this.#playerSprite, 
+            this.#game.getPlayerPosition(), 
+            this.#game.getPlayerDimensions()
         );
         this.#view.renderBgTiles(this.#bgTileset);
 
