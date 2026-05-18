@@ -31,6 +31,8 @@ export default class Move {
 
     update() {
 
+        console.log(this.keys);
+
         this.handleInput();
 
         this.applyGravity();
@@ -61,6 +63,11 @@ export default class Move {
             this.velY = -Move.initialJumpSpeed;
             this.collisions.down = false;
         }
+
+        if ((!this.keys['z'] && this.velY < 0) ||
+             this.collisions.up && this.velY < 0) {
+            this.velY *= 0.5;
+        }
     }
 
     applyGravity() {
@@ -69,9 +76,6 @@ export default class Move {
         } else {
             this.velY = 0;
         }
-        
-
-        console.log(this.velY)
 
         if (this.velY > Move.maxGravity) {
             this.velY = Move.maxGravity;
@@ -129,10 +133,12 @@ export default class Move {
     collides(x, y) {
 
         const inset = 0.001;
+        const xOffset = 0.1;
+        const yOffset = 0.05;
 
-        const left = x + inset;
-        const right = x + this.player.width - inset;
-        const top = y + inset;
+        const left = x + inset + xOffset;
+        const right = x + this.player.width - inset - xOffset;
+        const top = y + inset + yOffset;
         const bottom = y + this.player.height - inset;
         const mid = y + (this.player.height / 2);
 
