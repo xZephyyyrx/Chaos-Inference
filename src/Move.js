@@ -1,10 +1,15 @@
 import Vector from "./Vector.js";
 
 export default class Move {
+
+    // MOVEMENT SPEED //
+
     // Speed of horizontal movement
     static speed = 7;
 
     static initialJumpSpeed = Move.speed * 2;
+
+    // BASIC JUMP FUNCTIONALITY //
 
     // Prevents the character from jumping repeatedly when
     // the z key is held
@@ -12,10 +17,14 @@ export default class Move {
 
     static zKeyRelease = false;
 
+    // JUMP BUFFERS //
+
     // Allows players to buffer a jump slightly before colliding
     // with the ground
     static totalJumpBufferFrames = 5;
     static activeJumpBufferFrames = 0;
+
+    // COYOTE FRAMES //
 
     // Controls for how long a player may jump after leaving a platform
     static totalCoyoteFrames = 5;
@@ -24,8 +33,29 @@ export default class Move {
     // Tracks whether the player was previously on a platform
     static previousDownCollision = false;
 
+    // WALLJUMPS //
+
+    // Controls how long the player remains in place when jumping into a wall
+    static totalWallStickFrames = 10;
+    static activeWallStickFrames = 0;
+
+    static hasTriggeredWallStick = false;
+
+    static pushawaySpeed = Move.speed * 1.5;
+
+    static totalWalljumpFrames = 5;
+    static activeWalljumpFrames = 0;
+
+    static totalWalljumpBufferFrames = 8;
+    static activeWalljumpBufferFrames = 0;
+
+
+    // GRAVITY VARIABLES //
+
     static maxGravity = 15;
     static gravityMod = 0.5;
+
+    // DIRECTION ENUM //
 
     static direction = Object.freeze({
         LEFT: 'Left',
@@ -51,6 +81,8 @@ export default class Move {
         this.handleInput();
 
         this.applyGravity();
+
+        this.handleWalljumps();
 
         this.moveX();
 
@@ -80,49 +112,81 @@ export default class Move {
     }
 
     handleInput() {
-        this.velX = 0;
 
-        if (this.keys['ArrowLeft']) {
-            this.velX = -Move.speed;
-        }
+        if (Move.activeWalljumpFrames > 0) {
+            Move.activeWalljumpFrames--;
+        } else {
+            this.velX = 0;
 
-        if (this.keys['ArrowRight']) {
-            this.velX = Move.speed;
-        }
-
-        if (this.keys['z']) {
-
-            // Standard Jump
-            if (this.collisions.down && !Move.hasJumped ||
-                Move.activeCoyoteFrames > 0 && !Move.hasJumped
-            ) {
-                this.velY = -Move.initialJumpSpeed;
-                this.collisions.down = false;
-                Move.hasJumped = true;
-
-            // Trigger buffer jump
-            } else if (Move.zKeyRelease) {
-                Move.activeJumpBufferFrames = Move.totalJumpBufferFrames;
+            if (this.keys['ArrowLeft']) {
+                this.velX = -Move.speed;
             }
 
-            Move.zKeyRelease = false;
-        }
+            if (this.keys['ArrowRight']) {
+                this.velX = Move.speed;
+            }
 
-        if (Move.activeJumpBufferFrames > 0) {
-            this.checkBufferJump();
-        }
+            if (this.keys['z']) {
 
-        if (!this.keys['z']) {
-            Move.zKeyRelease = true;
-        }
+                ///////////////
+                // WALLJUMPS //
+                ///////////////
 
-        if (!this.keys['z'] && this.collisions.down) {
-            Move.hasJumped = false;
-        }
+                if (Move.hasTriggeredWallStick && 
+                    Move.zKeyRelease) {
+                    this.velY = -Move.initialJumpSpeed;
 
-        if ((!this.keys['z'] && this.velY < 0) ||
-             this.collisions.up && this.velY < 0) {
-            this.velY *= 0.5;
+                    if (this.collisions.left) {
+                        this.velX = Move.pushawaySpeed;
+                    }
+
+                    if (this.collisions.right) {
+                        this.velX = -Move.pushawaySpeed;
+                    }
+
+                        
+                    Move.activeWallStickFrames = 0;
+                    Move.hasTriggeredWallStick = false;
+
+                    Move.activeWalljumpFrames = Move.totalWalljumpFrames;
+                }
+
+                ////////////////////
+                // STANDARD JUMPS //
+                ////////////////////zz
+
+                // Standard Jump
+                if (this.collisions.down && !Move.hasJumped ||
+                    Move.activeCoyoteFrames > 0 && !Move.hasJumped
+                ) {
+                    this.velY = -Move.initialJumpSpeed;
+                    this.collisions.down = false;
+                    Move.hasJumped = true;
+
+                // Trigger buffer jump
+                } else if (Move.zKeyRelease) {
+                    Move.activeJumpBufferFrames = Move.totalJumpBufferFrames;
+                }
+
+                Move.zKeyRelease = false;
+            }
+
+            if (Move.activeJumpBufferFrames > 0) {
+                this.checkBufferJump();
+            }
+
+            if (!this.keys['z']) {
+                Move.zKeyRelease = true;
+            }
+
+            if (!this.keys['z'] && this.collisions.down) {
+                Move.hasJumped = false;
+            }
+
+            if ((!this.keys['z'] && this.velY < 0) ||
+                this.collisions.up && this.velY < 0) {
+                this.velY *= 0.5;
+            }
         }
     }
 
@@ -138,6 +202,26 @@ export default class Move {
         }
     }
 
+    handleWalljumps() {
+
+        if (this.jumpCollidesWithWall() && 
+        !Move.hasTriggeredWallStick &&
+        Move.activeWalljumpFrames <= 0) {
+            Move.hasTriggeredWallStick = true;
+            Move.activeWalljumpBufferFrames = Move.totalWalljumpBufferFrames;
+            Move.activeWallStickFrames = Move.totalWallStickFrames;
+        } else if (!this.jumpCollidesWithWall() && Move.activeWalljumpBufferFrames <= 0) {
+            Move.hasTriggeredWallStick = false;
+        } else if (!this.jumpCollidesWithWall() && Move.activeWalljumpBufferFrames > 0) {
+            Move.activeWalljumpBufferFrames--;
+        }
+
+        if (Move.activeWallStickFrames > 0) {
+            this.velY = 0;
+            Move.activeWallStickFrames--;
+        }
+    }
+
     checkBufferJump() {
         if (this.collisions.down) {
             this.velY = -Move.initialJumpSpeed;
@@ -150,6 +234,7 @@ export default class Move {
     }
 
     moveX() {
+
         let potentialX = this.posX + this.velX * this.time;
 
         if (!this.collides(potentialX, this.posY)) {
@@ -223,17 +308,26 @@ export default class Move {
 
     collidesWithGround(x, y) {
 
-        const inset = 0.001;
         const xOffset = 0.1;
         const yOffset = 0.05;
         
-        const left = x + inset + xOffset;
-        const right = x + this.player.width - inset - xOffset;
-        const bottom = y + this.player.height - inset + yOffset;
+        const left = x + xOffset;
+        const right = x + this.player.width - xOffset;
+        const bottom = y + this.player.height + yOffset;
 
         return !(
             this.level.checkTileAt(left, bottom) && 
             this.level.checkTileAt(right, bottom)
+        )
+    }
+
+    jumpCollidesWithWall() {
+        return (
+            !this.collisions.down && 
+            (
+                this.collisions.left ||
+                this.collisions.right
+            )
         )
     }
 }
