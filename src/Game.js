@@ -37,7 +37,6 @@ export default class Game {
 
         this.#player.pos = updatedValues.pos;
         this.#player.vel = updatedValues.vel;
-        this.#player.gravity = updatedValues.gravity;
         this.#player.collisions = updatedValues.collisions;
     }
 

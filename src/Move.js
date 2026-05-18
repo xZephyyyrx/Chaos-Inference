@@ -6,8 +6,25 @@ export default class Move {
 
     static initialJumpSpeed = Move.speed * 2;
 
-    static maxGravity = 15;
+    // Prevents the character from jumping repeatedly when
+    // the z key is held
+    static hasJumped = false;
 
+    static zKeyRelease = false;
+
+    // Allows players to buffer a jump slightly before colliding
+    // with the ground
+    static totalJumpBufferFrames = 5;
+    static activeJumpBufferFrames = 0;
+
+    // Controls for how long a player may jump after leaving a platform
+    static totalCoyoteFrames = 5;
+    static activeCoyoteFrames = 0;
+    
+    // Tracks whether the player was previously on a platform
+    static previousDownCollision = false;
+
+    static maxGravity = 15;
     static gravityMod = 0.5;
 
     static direction = Object.freeze({
@@ -31,8 +48,6 @@ export default class Move {
 
     update() {
 
-        console.log(this.keys);
-
         this.handleInput();
 
         this.applyGravity();
@@ -41,11 +56,27 @@ export default class Move {
 
         this.moveY();
 
+        this.handleCoyoteFrames();
+
         return {
             pos: new Vector(this.posX, this.posY),
             vel: new Vector(this.velX, this.velY),
             collisions: this.collisions
         }
+    }
+
+    handleCoyoteFrames() {
+        let currentCollision = this.collidesWithGround(this.posX, this.posY);
+
+        if (Move.activeCoyoteFrames > 0) {
+            Move.activeCoyoteFrames -= 1;
+        }
+        
+        if (Move.previousDownCollision && !currentCollision && !this.keys['z']) {
+            Move.activeCoyoteFrames = Move.totalCoyoteFrames;
+        }
+
+        Move.previousDownCollision = currentCollision;
     }
 
     handleInput() {
@@ -59,9 +90,34 @@ export default class Move {
             this.velX = Move.speed;
         }
 
-        if (this.keys['z'] && this.collisions.down) {
-            this.velY = -Move.initialJumpSpeed;
-            this.collisions.down = false;
+        if (this.keys['z']) {
+
+            // Standard Jump
+            if (this.collisions.down && !Move.hasJumped ||
+                Move.activeCoyoteFrames > 0 && !Move.hasJumped
+            ) {
+                this.velY = -Move.initialJumpSpeed;
+                this.collisions.down = false;
+                Move.hasJumped = true;
+
+            // Trigger buffer jump
+            } else if (Move.zKeyRelease) {
+                Move.activeJumpBufferFrames = Move.totalJumpBufferFrames;
+            }
+
+            Move.zKeyRelease = false;
+        }
+
+        if (Move.activeJumpBufferFrames > 0) {
+            this.checkBufferJump();
+        }
+
+        if (!this.keys['z']) {
+            Move.zKeyRelease = true;
+        }
+
+        if (!this.keys['z'] && this.collisions.down) {
+            Move.hasJumped = false;
         }
 
         if ((!this.keys['z'] && this.velY < 0) ||
@@ -79,6 +135,17 @@ export default class Move {
 
         if (this.velY > Move.maxGravity) {
             this.velY = Move.maxGravity;
+        }
+    }
+
+    checkBufferJump() {
+        if (this.collisions.down) {
+            this.velY = -Move.initialJumpSpeed;
+            this.collisions.down = false;
+            Move.hasJumped = true;
+            Move.zKeyRelease = false;
+        } else {
+            Move.activeJumpBufferFrames -= 1;
         }
     }
 
@@ -127,6 +194,8 @@ export default class Move {
             if (this.velY < 0) {
                 this.collisions.up = true;
             }
+
+            this.velY = 0;
         }
     }
 
@@ -150,5 +219,21 @@ export default class Move {
             this.level.checkTileAt(left, bottom) &&
             this.level.checkTileAt(right, bottom)
         );
+    }
+
+    collidesWithGround(x, y) {
+
+        const inset = 0.001;
+        const xOffset = 0.1;
+        const yOffset = 0.05;
+        
+        const left = x + inset + xOffset;
+        const right = x + this.player.width - inset - xOffset;
+        const bottom = y + this.player.height - inset + yOffset;
+
+        return !(
+            this.level.checkTileAt(left, bottom) && 
+            this.level.checkTileAt(right, bottom)
+        )
     }
 }
