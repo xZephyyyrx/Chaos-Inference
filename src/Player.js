@@ -2,27 +2,44 @@ export default class Player {
     // Player position
     #pos;
 
+    // Player velocity
+    #vel;
+
     // Player width & height in terms of tiles
     #height = 1.5;
     #width = 0.75;
 
-    // Effects of gravity
-    #vertSpeed = 0;
+    // Used to determine whether jumps or walljump inputs are valid
+    #collisions = {
+        left: false,
+        right: false,
+        up: false,
+        down: false
+    }
 
-    constructor(pos) {
+    constructor(pos, vel) {
         this.#pos = pos;
+        this.#vel = vel;
     }
 
     set pos(newPos) {
         this.#pos = newPos;
     }
 
-    set vertSpeed(newSpeed) {
-        this.#vertSpeed = newSpeed;
+    set vel(newVel) {
+        this.#vel = newVel;
+    }
+
+    set collisions(newState) {
+        this.#collisions = newState;
     }
 
     get pos() {
         return this.#pos;
+    }
+
+    get vel() {
+        return this.#vel;
     }
 
     get height() {
@@ -33,7 +50,7 @@ export default class Player {
         return this.#width;
     }
 
-    get vertSpeed() {
-        return this.#vertSpeed;
+    get collisions() {
+        return this.#collisions;
     }
 }

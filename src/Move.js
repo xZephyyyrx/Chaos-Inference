@@ -4,11 +4,11 @@ export default class Move {
     // Speed of horizontal movement
     static speed = 7;
 
-    // Max vert speed when falling
-    static maxGravity = 1;
+    static initialJumpSpeed = Move.speed * 2;
 
-    // Controls how much gravity affects vertspeed per tick
-    static gravityMod = 0.01;
+    static maxGravity = 15;
+
+    static gravityMod = 0.5;
 
     static direction = Object.freeze({
         LEFT: 'Left',
@@ -17,84 +17,132 @@ export default class Move {
         DOWN: 'Down'
     });
 
-    // Used to ensure correct visual display for horizontal collisions
-    static xCollisionOffsetModifier = 0.09;
-
-    static yDownCollisionOffsetModifier = 0.95;
-
     constructor(level, player, keys, time) {
         this.level = level;
         this.player = player;
         this.keys = keys;
         this.time = time;
-        this.newX = this.player.pos.x;
-        this.newY = this.player.pos.y;
-        this.xLeftCollisionOffset = 1 - this.player.width + Move.xCollisionOffsetModifier;
-        this.xRightCollisionOffset = this.xLeftCollisionOffset - 0.18;
-        this.yDownCollisionOffset = 1 - this.player.height + Move.yDownCollisionOffsetModifier;
-        this.yUpCollisionOffset = this.yDownCollisionOffset + 0.05;
+        this.posX = this.player.pos.x;
+        this.posY = this.player.pos.y;
+        this.velX = this.player.vel.x;
+        this.velY = this.player.vel.y;
+        this.collisions = this.player.collisions;
     }
 
-    // TO DO: Prevent movement if both left & right held at same time //
-
     update() {
+
+        this.handleInput();
+
+        this.applyGravity();
+
+        this.moveX();
+
+        this.moveY();
+
+        return {
+            pos: new Vector(this.posX, this.posY),
+            vel: new Vector(this.velX, this.velY),
+            collisions: this.collisions
+        }
+    }
+
+    handleInput() {
+        this.velX = 0;
+
         if (this.keys['ArrowLeft']) {
-            if (this.checkMove(Move.direction.LEFT)) {
-                this.newX -= Move.speed * this.time;
-            }
+            this.velX = -Move.speed;
         }
 
         if (this.keys['ArrowRight']) {
-            if (this.checkMove(Move.direction.RIGHT)) {
-                this.newX += Move.speed * this.time;
-            }
+            this.velX = Move.speed;
         }
 
-        return new Vector(this.newX, this.newY);
+        if (this.keys['z'] && this.collisions.down) {
+            this.velY = -Move.initialJumpSpeed;
+            this.collisions.down = false;
+        }
     }
 
-    // Returns true if a potential move is free from collisions
-    checkMove(direction) {
-        let result = false;
-
-        if (direction === 'Left') {
-            let xCheck = this.newX - Move.speed * this.time + this.xLeftCollisionOffset;
-            if (this.level.checkTileAt(xCheck, this.newY - (this.yDownCollisionOffset * 1.1)) && 
-                this.level.checkTileAt(xCheck, this.newY + this.player.height - (this.yDownCollisionOffset * 1.2)) &&
-                this.level.checkTileAt(xCheck, this.newY + (this.player.height / 3))) {
-                result = true;
-            }
+    applyGravity() {
+        if (!this.collisions.down) {
+            this.velY += Move.gravityMod;
+        } else {
+            this.velY = 0;
         }
-
-        if (direction === 'Right') {
-            let xCheck = this.newX + Move.speed * this.time + this.player.width + this.xRightCollisionOffset;
-            if (this.level.checkTileAt(xCheck, this.newY - (this.yDownCollisionOffset * 1.1)) &&
-                this.level.checkTileAt(xCheck, this.newY + this.player.height - (this.yDownCollisionOffset * 1.2)) &&
-                this.level.checkTileAt(xCheck, this.newY + (this.player.height / 3))) {
-                result = true;
-            }
-        }
-
-        if (direction === 'Down') {
-            let yCheck = this.newY + this.player.height - this.yDownCollisionOffset;
-            if (this.level.checkTileAt(this.newX + this.xLeftCollisionOffset, yCheck) &&
-                this.level.checkTileAt(this.newX + this.player.width + this.xRightCollisionOffset, yCheck)) {
-                result = true;
-            }
-        }
-
-        if (direction === 'Up') {
-            let yCheck = this.newY - this.yUpCollisionOffset;
-            if (this.level.checkTileAt(this.newX + this.xLeftCollisionOffset, yCheck) &&
-                this.level.checkTileAt(this.newX + this.player.width + this.xRightCollisionOffset, yCheck)) {
-                result = true
-            }
-        }
-
-        return result;
-    }
-
-    applyVertSpeed() {
         
+
+        console.log(this.velY)
+
+        if (this.velY > Move.maxGravity) {
+            this.velY = Move.maxGravity;
+        }
+    }
+
+    moveX() {
+        let potentialX = this.posX + this.velX * this.time;
+
+        if (!this.collides(potentialX, this.posY)) {
+
+            this.posX = potentialX;
+
+            this.collisions.left = false;
+            this.collisions.right = false;
+
+        } else {
+            if (this.velX > 0) {
+                this.collisions.right = true;
+            }
+
+            if (this.velX < 0) {
+                this.collisions.left = true;
+            }
+
+            this.velX = 0;
+        }
+    }
+
+    moveY() {
+        let previousY = this.posY;
+
+        let potentialY = this.posY + this.velY * this.time;
+
+        if (!this.collides(this.posX, potentialY)) {
+
+            this.posY = potentialY;
+
+            this.collisions.up = false;
+            this.collisions.down = false;
+
+        } else {
+            this.posY = previousY;
+
+            if (this.velY > 0) {
+                this.collisions.down = true;
+            }
+
+            if (this.velY < 0) {
+                this.collisions.up = true;
+            }
+        }
+    }
+
+    collides(x, y) {
+
+        const inset = 0.001;
+
+        const left = x + inset;
+        const right = x + this.player.width - inset;
+        const top = y + inset;
+        const bottom = y + this.player.height - inset;
+        const mid = y + (this.player.height / 2);
+
+        return !(
+            this.level.checkTileAt(left, top) &&
+            this.level.checkTileAt(right, top) &&
+            this.level.checkTileAt(left, mid) &&
+            this.level.checkTileAt(right, mid) &&
+            this.level.checkTileAt(left, bottom) &&
+            this.level.checkTileAt(right, bottom)
+        );
     }
 }

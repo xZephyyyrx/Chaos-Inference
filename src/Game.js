@@ -33,7 +33,11 @@ export default class Game {
             deltaTime
         )
 
-        this.#player.pos = newMove.update();
+        let updatedValues = newMove.update();
+
+        this.#player.pos = updatedValues.pos;
+        this.#player.vel = updatedValues.vel;
+        this.#player.collisions = updatedValues.collisions;
     }
 
     // Retriving Player data

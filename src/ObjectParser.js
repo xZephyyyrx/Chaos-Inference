@@ -65,12 +65,16 @@ export default class ObjectParser {
     }
 
     static parsePlayerLocation(gridmap) {
+
+        const xOffset = 0.75 / 2;
+        const yOffset = 1.5 / 2;
+
         let player;
 
         for (let y = 0; y < gridmap.length; y++) {
             for (let x = 0; x < gridmap[y].length; x++) {
                 if (gridmap[y][x] === ObjectParser.playerChar) {
-                    player = new Player(new Vector(x, y));
+                    player = new Player(new Vector(x, y - yOffset), new Vector(0, 0));
                 }
             }
         }
