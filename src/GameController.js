@@ -43,7 +43,7 @@ export default class GameController {
 
     // TEST DATA FOR LOADING & RENDERING MAPS //
     async loadTestData() {
-        this.#gridmap = await this.#dataloader.importGridmap('pillars');
+        this.#gridmap = await this.#dataloader.importGridmap('hazardyard');
         this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
 
         try {

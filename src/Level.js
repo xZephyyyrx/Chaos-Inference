@@ -40,14 +40,39 @@ export default class Level {
 
     // CHECKING LEVEL OBJECTS //
 
+    getTileAt(x, y) {
+
+        if (y > this.#levelTiles.length || y < 0) {
+            throw new Error('Player is out of y-axis bounds!');
+        }
+
+        const tileY = Math.floor(y);
+
+        if (x > this.#levelTiles[tileY].length || x < 0) {
+            throw new Error('Player is out of x-axis bounds!');
+        }
+
+        const tileX = Math.floor(x);
+
+        return this.#levelTiles[tileY][tileX];
+    }
+
     // As each tile occupies a 1x1 space, this checks if a tile is present
     // at the floor of the given coordinates as a tile at this location
     // will necessarily occupy the checked space
     isClearAt(x, y) {
+        let tile;
         let result = false;
 
-        if (!this.#levelTiles[Math.floor(y)][Math.floor(x)] ||
-            this.#levelTiles[Math.floor(y)][Math.floor(x)].type !== 'Tile') {
+        try {
+            tile = this.getTileAt(x, y);
+        } catch (e) {
+            throw (e);
+        }
+        
+
+        if (!tile ||
+            tile.type !== 'Tile') {
             result = true;
         }
 
@@ -55,10 +80,16 @@ export default class Level {
     }
 
     isHazardAt(x, y) {
+        let tile;
         let result = false;
 
-        if (this.#levelTiles[Math.floor(y)][Math.floor(x)] &&
-            this.#levelTiles[Math.floor(y)][Math.floor(x)].type === 'Hazard') {
+        try {
+            tile = this.getTileAt(x, y);
+        } catch (e) {
+            throw (e);
+        }
+
+        if (tile && tile.type === 'Hazard') {
             result = true;
         }
 
