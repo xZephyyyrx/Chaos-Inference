@@ -95,6 +95,13 @@ export default class Move {
 
         aliveState = this.checkTouchesHazard();
 
+        try {
+            this.collidesWithToken(this.posX, this.posY);
+        } catch {
+            this.outOfBounds = true;
+        }
+        
+
         if (this.outOfBounds) {
             aliveState = false;
         }
@@ -361,7 +368,6 @@ export default class Move {
         } catch (e) {
             throw (e);
         }
-        
     }
 
     jumpCollidesWithWall() {
@@ -379,11 +385,12 @@ export default class Move {
         const inset = 0.001;
         const xOffset = 0.1;
         const yOffset = 0.05;
+        const shrinkOffset = 0.1;
 
-        const left = x + inset + xOffset;
-        const right = x + this.player.width - inset - xOffset;
-        const top = y + inset + yOffset;
-        const bottom = y + this.player.height - inset;
+        const left = (x + inset + xOffset) + shrinkOffset;
+        const right = (x + this.player.width - inset - xOffset) - shrinkOffset;
+        const top = (y + inset + yOffset) + shrinkOffset;
+        const bottom = (y + this.player.height - inset) - shrinkOffset;
         const mid = y + (this.player.height / 2);
 
         try {
@@ -394,6 +401,31 @@ export default class Move {
                 this.level.isHazardAt(right, mid) ||
                 this.level.isHazardAt(left, bottom) ||
                 this.level.isHazardAt(right, bottom)
+            );
+        } catch (e) {
+            throw (e);
+        }
+    }
+
+    collidesWithToken(x, y) {
+        const inset = 0.001;
+        const xOffset = 0.1;
+        const yOffset = 0.05;
+
+        const left = x + inset + xOffset;
+        const right = x + this.player.width - inset - xOffset;
+        const top = y + inset + yOffset;
+        const bottom = y + this.player.height - inset;
+        const mid = y + (this.player.height / 2);
+
+        try {
+            return !(
+                this.level.isTokenAt(left, top) ||
+                this.level.isTokenAt(right, top) ||
+                this.level.isTokenAt(left, mid) ||
+                this.level.isTokenAt(right, mid) ||
+                this.level.isTokenAt(left, bottom) ||
+                this.level.isTokenAt(right, bottom)
             );
         } catch (e) {
             throw (e);

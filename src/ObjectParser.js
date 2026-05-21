@@ -2,6 +2,7 @@ import Player from "./Player.js";
 import Tile from "./Tile.js";
 import Hazard from "./Hazard.js";
 import Vector from "./Vector.js";
+import Token from "./Token.js";
 
 export default class ObjectParser {
 
@@ -76,10 +77,11 @@ export default class ObjectParser {
     }
 
     static parseHazard(pos, char) {
-        let hazard;
-        let key = char.toUpperCase();
+        return new Hazard(pos, char.toUpperCase());
+    }
 
-        return new Hazard(pos, key);
+    static parseToken(pos, char) {
+        return new Token(pos, char);
     }
 
     static parsePlayerLocation(gridmap) {

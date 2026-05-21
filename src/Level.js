@@ -7,7 +7,7 @@ export default class Level {
     
     constructor(gridmap) {
         this.createLevelGeometry(gridmap);
-        this.createHazards(gridmap);
+        this.createObjects(gridmap);
     }
 
     // LEVEL INITIALIZATION //
@@ -23,17 +23,31 @@ export default class Level {
         }
     }
 
-    createHazards(gridmap) {
+    createObjects(gridmap) {
         for (let y = 0; y < this.#levelTiles.length; y++) {
             for (let x = 0; x < this.#levelTiles[y].length; x++) {
-                if (ObjectParser.isLetter(gridmap[y][x]) &&
-                    ObjectParser.isLetterLowercase(gridmap[y][x])) {
+                if (ObjectParser.isLetter(gridmap[y][x])) {
 
-                    let hazard = ObjectParser.parseHazard(new Vector(x, y), gridmap[y][x]);
-                    this.#levelTiles[y][x] = hazard;
-                    
+                    if (ObjectParser.isLetterLowercase(gridmap[y][x])) {
+                        let hazard = ObjectParser.parseHazard(new Vector(x, y), gridmap[y][x]);
+                        this.#levelTiles[y][x] = hazard;
+                    } else {
+                        let token = ObjectParser.parseToken(new Vector(x, y), gridmap[y][x]);
+                        this.#levelTiles[y][x] = token;
+                    }
                 }
-                
+            }
+        }
+    }
+
+    collectToken(key) {
+        for (let y = 0; y < this.#levelTiles.length; y++) {
+            for (let x = 0; x < this.#levelTiles[y].length; x++) {
+                if (this.#levelTiles[y][x] === null) {continue;}
+
+                if (this.#levelTiles[y][x].key === key) {
+                    this.#levelTiles[y][x].activeState = false;
+                }
             }
         }
     }
@@ -89,8 +103,27 @@ export default class Level {
             throw (e);
         }
 
-        if (tile && tile.type === 'Hazard') {
+        if (tile && tile.type === 'Hazard' && tile.activeState === true) {
             result = true;
+        }
+
+        return result;
+    }
+
+    isTokenAt(x, y) {
+        let tile;
+        let result = false;
+        let key = null;
+
+        try {
+            tile = this.getTileAt(x, y);
+        } catch (e) {
+            throw (e);
+        }
+
+        if (tile && tile.type === 'Token' && tile.activeState === true) {
+            this.collectToken(tile.key);
+            console.log('token get!')
         }
 
         return result;

@@ -43,11 +43,11 @@ export default class GameController {
 
     // TEST DATA FOR LOADING & RENDERING MAPS //
     async loadTestData() {
-        this.#gridmap = await this.#dataloader.importGridmap('hazardyard');
+        this.#gridmap = await this.#dataloader.importGridmap('level1grid');
         this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
 
         try {
-            this.#fgTileset = await this.#dataloader.importTileset('appearancetestbright');
+            this.#fgTileset = await this.#dataloader.importTileset('appearancetest');
         } catch (error) {
             console.log(error);
         }
@@ -71,7 +71,7 @@ export default class GameController {
         }
 
         try {
-            this.#tokenSprites = await this.#dataloader.importObjectSprites('token');
+            this.#tokenSprites = await this.#dataloader.importObjectSprites('tokenbright');
         } catch (error) {
             console.log(error);
         }
@@ -97,7 +97,8 @@ export default class GameController {
             this.#game.getCurrentLevelTiles(),
             this.#fgTileset, 
             this.#fgTilesetMap,
-            this.#hazardSprites
+            this.#hazardSprites,
+            this.#tokenSprites
         );
 
         this.runGame(0);
@@ -109,13 +110,13 @@ export default class GameController {
         this.#lastTime = time;
 
         // UPDATE VIEW //
-
         this.#view.clearFg();
         this.#view.renderLevel(
             this.#game.getCurrentLevelTiles(),
             this.#fgTileset, 
             this.#fgTilesetMap,
-            this.#hazardSprites
+            this.#hazardSprites,
+            this.#tokenSprites
         );
 
         this.#view.renderPlayer(

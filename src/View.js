@@ -1,5 +1,11 @@
 export default class View {
 
+    static tileIdentifier = 'Tile';
+
+    static hazardIdentifier = 'Hazard';
+
+    static tokenIdentifier = 'Token';
+
     // Marks by how much each sprite has been upscaled
     #tileUpscale = 10;
 
@@ -28,9 +34,9 @@ export default class View {
         this.fgCtx = fgCtx;
     }
 
-    renderLevel(grid, tileset, tilemap, hazardSprites) {
+    renderLevel(grid, tileset, tilemap, hazardSprites, tokenSprites) {
         this.renderLevelTiles(grid, tileset, tilemap);
-        this.renderLevelHazards(grid, hazardSprites);
+        this.renderLevelObjects(grid, hazardSprites, tokenSprites);
     }
 
     renderPlayer(sprite, pos, dimensions) {
@@ -43,7 +49,7 @@ export default class View {
             dimensions.height * this.#fgTileDisplaySize
         );
 
-        this.renderHitbox(pos, dimensions);
+        //this.renderHitbox(pos, dimensions);
     }
 
     renderHitbox(pos, dimensions) {
@@ -61,7 +67,7 @@ export default class View {
         for (let y = 0; y < grid.length; y++) {
             for (let x = 0; x < grid[y].length; x++) {
 
-                if (grid[y][x] === null || grid[y][x].type !== 'Tile') {continue;}
+                if (grid[y][x] === null || grid[y][x].type !== View.tileIdentifier) {continue;}
 
                 this.fgCtx.drawImage(
 
@@ -88,14 +94,48 @@ export default class View {
         }
     }
 
-    renderLevelHazards(grid, hazardSprites) {
+    renderLevelObjects(grid, hazardSprites, tokenSprites) {
         for (let y = 0; y < grid.length; y++) {
             for (let x = 0; x < grid[y].length; x++) {
 
-                if (grid[y][x] === null || grid[y][x].type !== 'Hazard') {continue;}
+                if (grid[y][x] === null) {continue;}
+
+                let image;
+
+                if (grid[y][x].type === View.hazardIdentifier && 
+                    grid[y][x].activeState
+                ) {
+                    image = hazardSprites;
+                } else if (grid[y][x].type === View.tokenIdentifier &&
+                    grid[y][x].activeState
+                ) {
+                    image = tokenSprites;
+                }
+
+                if (image) {
+                    this.fgCtx.drawImage(
+                        image,
+
+                        grid[y][x].pos.x * this.#fgTileDisplaySize,
+                        grid[y][x].pos.y * this.#fgTileDisplaySize,
+
+                        this.#fgTileDisplaySize,
+                        this.#fgTileDisplaySize
+                    )
+                }
+                
+            }
+        }
+    }
+
+    renderLevelTokens(grid, tokenSprites) {
+        for (let y = 0; y < grid.length; y++) {
+            for (let x = 0; x < grid[y].length; x++) {
+
+                if (grid[y][x] === null || grid[y][x].type !== 'Token') {continue;}
 
                 this.fgCtx.drawImage(
-                    hazardSprites,
+                    tokenSprites,
 
                     grid[y][x].pos.x * this.#fgTileDisplaySize,
                     grid[y][x].pos.y * this.#fgTileDisplaySize,
