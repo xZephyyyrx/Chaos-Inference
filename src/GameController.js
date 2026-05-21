@@ -93,13 +93,6 @@ export default class GameController {
         } catch (e) {
             throw (e);
         }
-        this.#view.renderLevel(
-            this.#game.getCurrentLevelTiles(),
-            this.#fgTileset, 
-            this.#fgTilesetMap,
-            this.#hazardSprites,
-            this.#tokenSprites
-        );
 
         this.runGame(0);
     }
@@ -111,23 +104,19 @@ export default class GameController {
 
         // UPDATE VIEW //
         this.#view.clearFg();
-        this.#view.renderLevel(
+        this.#view.renderAll(
             this.#game.getCurrentLevelTiles(),
             this.#fgTileset, 
             this.#fgTilesetMap,
             this.#hazardSprites,
-            this.#tokenSprites
-        );
-
-        this.#view.renderPlayer(
+            this.#tokenSprites,
             this.#playerSprite, 
             this.#game.getPlayerPosition(), 
             this.#game.getPlayerDimensions(),
-            this.#game.getPlayerDirection()
-        );
-        this.#view.renderBgTiles(this.#bgTileset);
-
-        this.#view.updateShader((performance.now() - this.#shaderTime) * 0.001);
+            this.#game.getPlayerDirection(),
+            this.#bgTileset,
+            this.#shaderTime
+        )
 
         // Read player inputs
 

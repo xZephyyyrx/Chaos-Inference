@@ -32,7 +32,7 @@ export default class Move {
     // COYOTE FRAMES //
 
     // Controls for how long a player may jump after leaving a platform
-    static totalCoyoteFrames = 8;
+    static totalCoyoteFrames = 10;
     static activeCoyoteFrames = 0;
     
     // Tracks whether the player was previously on a platform

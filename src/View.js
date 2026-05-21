@@ -6,6 +6,13 @@ export default class View {
 
     static tokenIdentifier = 'Token';
 
+    static camera = {
+        x: 0,
+        y: 0
+    }
+
+    static bgParallaxRate = 2;
+
     // Marks by how much each sprite has been upscaled
     #tileUpscale = 10;
 
@@ -32,6 +39,102 @@ export default class View {
         this.glCtx = glCtx;
         this.fgCanvas = fgCanvas;
         this.fgCtx = fgCtx;
+        this.deadZone = {
+            left: this.fgCanvas.width * 0.4,
+            right: this.fgCanvas.width * 0.6,
+            top: this.fgCanvas.height * 0.4,
+            bottom: this.fgCanvas.height * 0.6
+        }
+    }
+
+    renderAll(
+        grid, 
+        fgTileset, 
+        fgTilemap, 
+        hazardSprites, 
+        tokenSprites,
+        playerSprite,
+        playerPos,
+        playerDimensions,
+        playerDirection,
+        bgTileset,
+        shaderTime
+    ) {
+
+        this.setCameraPosition(grid, playerPos, playerDimensions);
+
+        this.clearFg();
+
+        this.fgCtx.save();
+        this.bgCtx.save();
+
+        this.fgCtx.translate(
+            Math.floor(-View.camera.x), 
+            Math.floor(-View.camera.y)
+        );
+
+        this.renderLevel(
+            grid, 
+            fgTileset, 
+            fgTilemap, 
+            hazardSprites, 
+            tokenSprites
+        );
+
+        this.renderPlayer(
+            playerSprite,
+            playerPos,
+            playerDimensions,
+            playerDirection
+        );
+
+        this.renderBgTiles(bgTileset);
+
+        this.fgCtx.restore();
+        this.bgCtx.restore();
+
+        this.updateShader((performance.now() - shaderTime) * 0.001);
+    }
+
+    setCameraPosition(grid, playerPos, playerDimensions) {
+        const levelWidth = grid[0].length * this.#fgTileDisplaySize;
+        const levelHeight = grid.length * this.#fgTileDisplaySize;
+
+        const playerWorldX = 
+            (playerPos.x + playerDimensions.width / 2) * this.#fgTileDisplaySize;
+
+        const playerWorldY = 
+            (playerPos.y + playerDimensions.height / 2) * this.#fgTileDisplaySize;
+
+        const playerScreenX = playerWorldX - View.camera.x;
+        const playerScreenY = playerWorldY - View.camera.y;
+
+        if (playerScreenX < this.deadZone.left) {
+            View.camera.x -= (this.deadZone.left - playerScreenX);
+        }
+
+        if (playerScreenX > this.deadZone.right) {
+            View.camera.x += (playerScreenX - this.deadZone.right);
+        }
+
+        if (playerScreenY < this.deadZone.top) {
+            View.camera.y -= (this.deadZone.top - playerScreenY);
+        }
+
+        if (playerScreenY > this.deadZone.bottom) {
+            View.camera.y += (playerScreenY - this.deadZone.bottom);
+        }
+
+        const maxCamX = Math.max(0, levelWidth - this.fgCanvas.width);
+        const maxCamY = Math.max(0, levelHeight - this.fgCanvas.height);
+
+        View.camera.x = Math.floor(
+            Math.max(0, Math.min(View.camera.x, maxCamX))
+        );
+
+        View.camera.y = Math.floor(
+            Math.max(0, Math.min(View.camera.y, maxCamY))
+        );
     }
 
     renderLevel(grid, tileset, tilemap, hazardSprites, tokenSprites) {
@@ -166,6 +269,17 @@ export default class View {
         const bgPattern = this.bgCtx.createPattern(tileset, 'repeat');
         const matrix = new DOMMatrix();
         matrix.scaleSelf(this.#bgTileDisplayScale, this.#bgTileDisplayScale);
+
+        matrix.translateSelf(
+            Math.floor(
+                -View.camera.x /
+                View.bgParallaxRate
+            ),
+            Math.floor(
+                -View.camera.y /
+                View.bgParallaxRate
+            )
+        )
 
         bgPattern.setTransform(matrix);
 
