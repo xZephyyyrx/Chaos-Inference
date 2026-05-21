@@ -4,6 +4,8 @@ export default class GameController {
     #bgTileset;
     #fgTileset;
     #fgTilesetMap;
+    #hazardSprites;
+    #tokenSprites;
     #playerSprite;
     #game;
     #view;
@@ -41,11 +43,11 @@ export default class GameController {
 
     // TEST DATA FOR LOADING & RENDERING MAPS //
     async loadTestData() {
-        this.#gridmap = await this.#dataloader.importGridmap('level1grid');
+        this.#gridmap = await this.#dataloader.importGridmap('pillars');
         this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
 
         try {
-            this.#fgTileset = await this.#dataloader.importTileset('appearancetest');
+            this.#fgTileset = await this.#dataloader.importTileset('appearancetestbright');
         } catch (error) {
             console.log(error);
         }
@@ -61,6 +63,18 @@ export default class GameController {
         } catch (error) {
             console.log(error);
         }
+
+        try {
+            this.#hazardSprites = await this.#dataloader.importObjectSprites('hazardbright');
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            this.#tokenSprites = await this.#dataloader.importObjectSprites('token');
+        } catch (error) {
+            console.log(error);
+        }
         
         this.#fgTilesetMap = await this.#dataloader.importTilesetMap('level1fgtilemap');
     }
@@ -69,11 +83,21 @@ export default class GameController {
     async setup() {
         await this.loadTestData();
 
-        this.#game.loadLevel(this.#gridmap);
-        this.#view.renderFgTiles(
+        this.initializeLevel();
+    }
+
+    initializeLevel() {
+        this.#game.importLevel(this.#gridmap);
+        try {
+            this.#game.loadLevel(0);
+        } catch (e) {
+            throw (e);
+        }
+        this.#view.renderLevel(
             this.#game.getCurrentLevelTiles(),
             this.#fgTileset, 
-            this.#fgTilesetMap
+            this.#fgTilesetMap,
+            this.#hazardSprites
         );
 
         this.runGame(0);
@@ -87,10 +111,11 @@ export default class GameController {
         // UPDATE VIEW //
 
         this.#view.clearFg();
-        this.#view.renderFgTiles(
+        this.#view.renderLevel(
             this.#game.getCurrentLevelTiles(),
             this.#fgTileset, 
-            this.#fgTilesetMap
+            this.#fgTilesetMap,
+            this.#hazardSprites
         );
 
         this.#view.renderPlayer(

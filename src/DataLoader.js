@@ -15,6 +15,9 @@ export default class DataLoader {
     // Folder containing level tileset images
     #tilesetFilepath = 'img/tilesets/';
 
+    // Folder contain object images
+    #objectSpritesFilepath = 'img/objects/'
+
     // Appends the correct filetype to tileset filenames
     #imageFiletype = '.webp';
 
@@ -55,6 +58,10 @@ export default class DataLoader {
 
     async importTileset(filename) {
         return await this.importImage(filename, this.#tilesetFilepath);
+    }
+
+    async importObjectSprites(filename) {
+        return await this.importImage(filename, this.#objectSpritesFilepath);
     }
 
     async importImage(filename, filepath) {

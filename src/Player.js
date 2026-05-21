@@ -17,6 +17,8 @@ export default class Player {
         down: false
     }
 
+    #aliveState = true;
+
     constructor(pos, vel) {
         this.#pos = pos;
         this.#vel = vel;
@@ -32,6 +34,10 @@ export default class Player {
 
     set collisions(newState) {
         this.#collisions = newState;
+    }
+
+    set aliveState(newState) {
+        this.#aliveState = newState;
     }
 
     get pos() {
@@ -52,5 +58,9 @@ export default class Player {
 
     get collisions() {
         return this.#collisions;
+    }
+    
+    get aliveState() {
+        return this.#aliveState;
     }
 }

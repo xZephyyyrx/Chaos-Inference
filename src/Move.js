@@ -74,9 +74,12 @@ export default class Move {
         this.velX = this.player.vel.x;
         this.velY = this.player.vel.y;
         this.collisions = this.player.collisions;
+        this.outOfBounds = false;
     }
 
     update() {
+
+        let aliveState = true;
 
         this.handleInput();
 
@@ -84,17 +87,41 @@ export default class Move {
 
         this.handleWalljumps();
 
-        this.moveX();
+        let potentialX = this.posX + this.velX * this.time;
+        let potentialY = this.posY + this.velY * this.time;
 
-        this.moveY();
+        if (this.isInBounds(potentialX, potentialY)) {
 
-        this.handleCoyoteFrames();
+            this.moveX();
+
+            this.moveY();
+
+            this.handleCoyoteFrames();
+
+            aliveState = this.checkTouchesHazard();
+        } else {
+            aliveState = false;
+        }
+        
 
         return {
             pos: new Vector(this.posX, this.posY),
             vel: new Vector(this.velX, this.velY),
-            collisions: this.collisions
+            collisions: this.collisions,
+            aliveState: aliveState
         }
+    }
+
+    isInBounds(potentialX, potentialY) {
+        let result = true;
+
+        try {
+            this.collides(potentialX, potentialY);
+        } catch (e) {
+            result = false;
+        }
+
+        return result;
     }
 
     handleCoyoteFrames() {
@@ -284,6 +311,10 @@ export default class Move {
         }
     }
 
+    checkTouchesHazard() {
+        return this.collidesWithHazard(this.posX, this.posY);
+    }
+
     collides(x, y) {
 
         const inset = 0.001;
@@ -297,12 +328,12 @@ export default class Move {
         const mid = y + (this.player.height / 2);
 
         return !(
-            this.level.checkTileAt(left, top) &&
-            this.level.checkTileAt(right, top) &&
-            this.level.checkTileAt(left, mid) &&
-            this.level.checkTileAt(right, mid) &&
-            this.level.checkTileAt(left, bottom) &&
-            this.level.checkTileAt(right, bottom)
+            this.level.isClearAt(left, top) &&
+            this.level.isClearAt(right, top) &&
+            this.level.isClearAt(left, mid) &&
+            this.level.isClearAt(right, mid) &&
+            this.level.isClearAt(left, bottom) &&
+            this.level.isClearAt(right, bottom)
         );
     }
 
@@ -316,8 +347,8 @@ export default class Move {
         const bottom = y + this.player.height + yOffset;
 
         return !(
-            this.level.checkTileAt(left, bottom) && 
-            this.level.checkTileAt(right, bottom)
+            this.level.isClearAt(left, bottom) && 
+            this.level.isClearAt(right, bottom)
         )
     }
 
@@ -329,5 +360,27 @@ export default class Move {
                 this.collisions.right
             )
         )
+    }
+
+    collidesWithHazard(x, y) {
+
+        const inset = 0.001;
+        const xOffset = 0.1;
+        const yOffset = 0.05;
+
+        const left = x + inset + xOffset;
+        const right = x + this.player.width - inset - xOffset;
+        const top = y + inset + yOffset;
+        const bottom = y + this.player.height - inset;
+        const mid = y + (this.player.height / 2);
+
+        return !(
+            this.level.isHazardAt(left, top) ||
+            this.level.isHazardAt(right, top) ||
+            this.level.isHazardAt(left, mid) ||
+            this.level.isHazardAt(right, mid) ||
+            this.level.isHazardAt(left, bottom) ||
+            this.level.isHazardAt(right, bottom)
+        );
     }
 }

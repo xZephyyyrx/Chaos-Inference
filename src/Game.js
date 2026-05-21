@@ -6,10 +6,34 @@ import Move from "./Move.js";
 export default class Game {
     #allLevels = [];
     #currentLevel;
+    #currentLevelNum;
     #state = {
-        level: null,
+        level: null
     }
     #player;
+
+    // LOAD GRIDMAP //
+
+    importLevel(gridmap) {
+        this.#allLevels.push(gridmap);
+    }
+
+    // LEVEL HANDLING //
+
+    loadLevel(levelNum) {
+        const gridmap = this.#allLevels[levelNum];
+
+        if (gridmap) {
+            const newLevel = new Level(gridmap);
+            this.#state.level = true;
+            this.#state.playerAlive = true;
+            this.#currentLevel = newLevel;
+            this.createPlayer(gridmap);
+            this.#currentLevelNum = levelNum;
+        } else {
+            throw new Error(`Level number ${levelNum} does not exist!`);
+        }
+    };
 
     // PLAYER HANDLING //
     
@@ -38,6 +62,19 @@ export default class Game {
         this.#player.pos = updatedValues.pos;
         this.#player.vel = updatedValues.vel;
         this.#player.collisions = updatedValues.collisions;
+        this.#player.aliveState = updatedValues.aliveState;
+
+        if (this.#player.aliveState === false) {
+
+            this.#currentLevel = null;
+            this.#player = null;
+
+            this.#state = {
+                level: false
+            }
+
+            this.loadLevel(this.#currentLevelNum);
+        }
     }
 
     // Retriving Player data
@@ -56,16 +93,6 @@ export default class Game {
     get player() {
         return this.#player;
     }
-
-    // LEVEL HANDLING //
-
-    loadLevel(gridmap) {
-        const newLevel = new Level(gridmap);
-        this.#allLevels.push(newLevel);
-        this.#state.level = true;
-        this.#currentLevel = newLevel;
-        this.createPlayer(gridmap);
-    };
 
     getCurrentLevelTiles() {
         return this.#currentLevel.levelTiles;

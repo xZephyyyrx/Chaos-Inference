@@ -1,6 +1,5 @@
 export default class View {
 
-
     // Marks by how much each sprite has been upscaled
     #tileUpscale = 10;
 
@@ -29,6 +28,11 @@ export default class View {
         this.fgCtx = fgCtx;
     }
 
+    renderLevel(grid, tileset, tilemap, hazardSprites) {
+        this.renderLevelTiles(grid, tileset, tilemap);
+        this.renderLevelHazards(grid, hazardSprites);
+    }
+
     renderPlayer(sprite, pos, dimensions) {
 
         this.fgCtx.drawImage(
@@ -53,11 +57,11 @@ export default class View {
     }
 
     // Draws the foreground tiles based on the passed Level levelTiles
-    renderFgTiles(grid, tileset, tilemap) {
+    renderLevelTiles(grid, tileset, tilemap) {
         for (let y = 0; y < grid.length; y++) {
             for (let x = 0; x < grid[y].length; x++) {
 
-                if (grid[y][x] === null) {continue;}
+                if (grid[y][x] === null || grid[y][x].type !== 'Tile') {continue;}
 
                 this.fgCtx.drawImage(
 
@@ -77,6 +81,25 @@ export default class View {
                     grid[y][x].pos.y*this.#fgTileDisplaySize,
 
                     // dWidth & dHeight
+                    this.#fgTileDisplaySize,
+                    this.#fgTileDisplaySize
+                )
+            }
+        }
+    }
+
+    renderLevelHazards(grid, hazardSprites) {
+        for (let y = 0; y < grid.length; y++) {
+            for (let x = 0; x < grid[y].length; x++) {
+
+                if (grid[y][x] === null || grid[y][x].type !== 'Hazard') {continue;}
+
+                this.fgCtx.drawImage(
+                    hazardSprites,
+
+                    grid[y][x].pos.x * this.#fgTileDisplaySize,
+                    grid[y][x].pos.y * this.#fgTileDisplaySize,
+
                     this.#fgTileDisplaySize,
                     this.#fgTileDisplaySize
                 )

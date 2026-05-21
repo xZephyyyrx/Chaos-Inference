@@ -1,6 +1,7 @@
 export default class Tile {
     #pos;
     #direction;
+    #type = 'Tile';
 
     constructor(pos, direction) {
         this.#pos = pos;
@@ -13,5 +14,9 @@ export default class Tile {
 
     get pos() {
         return this.#pos;
+    }
+
+    get type() {
+        return this.#type;
     }
 }

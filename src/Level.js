@@ -7,6 +7,7 @@ export default class Level {
     
     constructor(gridmap) {
         this.createLevelGeometry(gridmap);
+        this.createHazards(gridmap);
     }
 
     // LEVEL INITIALIZATION //
@@ -16,8 +17,23 @@ export default class Level {
             this.#levelTiles[y] = [];
 
             for (let x = 0; x < gridmap[y].length; x++) {
-                let tile = ObjectParser.parseObject(new Vector(x, y), gridmap[y][x]);
+                let tile = ObjectParser.parseTile(new Vector(x, y), gridmap[y][x]);
                 this.#levelTiles[y][x] = tile;
+            }
+        }
+    }
+
+    createHazards(gridmap) {
+        for (let y = 0; y < this.#levelTiles.length; y++) {
+            for (let x = 0; x < this.#levelTiles[y].length; x++) {
+                if (ObjectParser.isLetter(gridmap[y][x]) &&
+                    ObjectParser.isLetterLowercase(gridmap[y][x])) {
+
+                    let hazard = ObjectParser.parseHazard(new Vector(x, y), gridmap[y][x]);
+                    this.#levelTiles[y][x] = hazard;
+                    
+                }
+                
             }
         }
     }
@@ -27,10 +43,22 @@ export default class Level {
     // As each tile occupies a 1x1 space, this checks if a tile is present
     // at the floor of the given coordinates as a tile at this location
     // will necessarily occupy the checked space
-    checkTileAt(x, y) {
+    isClearAt(x, y) {
         let result = false;
 
-        if (!this.#levelTiles[Math.floor(y)][Math.floor(x)]) {
+        if (!this.#levelTiles[Math.floor(y)][Math.floor(x)] ||
+            this.#levelTiles[Math.floor(y)][Math.floor(x)].type !== 'Tile') {
+            result = true;
+        }
+
+        return result;
+    }
+
+    isHazardAt(x, y) {
+        let result = false;
+
+        if (this.#levelTiles[Math.floor(y)][Math.floor(x)] &&
+            this.#levelTiles[Math.floor(y)][Math.floor(x)].type === 'Hazard') {
             result = true;
         }
 

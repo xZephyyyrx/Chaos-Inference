@@ -1,10 +1,13 @@
 import Player from "./Player.js";
 import Tile from "./Tile.js";
+import Hazard from "./Hazard.js";
 import Vector from "./Vector.js";
 
 export default class ObjectParser {
 
     static playerChar = '@';
+
+    static letterRegex = /[a-zA-Z]$/;
 
     static directionKey = Object.freeze({
         TOPLEFT: 'topLeft',
@@ -18,7 +21,7 @@ export default class ObjectParser {
         BOTTOMRIGHT: 'bottomRight'
     });
 
-    static parseObject(pos, char) {
+    static parseTile(pos, char) {
         let tile;
         let direction;
 
@@ -62,6 +65,21 @@ export default class ObjectParser {
         }
 
         return tile;
+    }
+
+    static isLetter(char) {
+        return ObjectParser.letterRegex.test(char);
+    }
+
+    static isLetterLowercase(char) {
+        return (char !== char.toUpperCase());
+    }
+
+    static parseHazard(pos, char) {
+        let hazard;
+        let key = char.toUpperCase();
+
+        return new Hazard(pos, key);
     }
 
     static parsePlayerLocation(gridmap) {
