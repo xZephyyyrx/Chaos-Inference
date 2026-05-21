@@ -90,6 +90,10 @@ export default class Game {
         }
     }
 
+    getPlayerDirection() {
+        return this.#player.direction;
+    }
+
     get player() {
         return this.#player;
     }

@@ -1,4 +1,5 @@
 export default class Player {
+
     // Player position
     #pos;
 
@@ -16,6 +17,8 @@ export default class Player {
         up: false,
         down: false
     }
+
+    #direction = 'right';
 
     #aliveState = true;
 
@@ -40,6 +43,10 @@ export default class Player {
         this.#aliveState = newState;
     }
 
+    set direction(newDirection) {
+        this.#direction = newDirection;
+    }
+
     get pos() {
         return this.#pos;
     }
@@ -58,6 +65,10 @@ export default class Player {
 
     get collisions() {
         return this.#collisions;
+    }
+
+    get direction() {
+        return this.#direction;
     }
     
     get aliveState() {

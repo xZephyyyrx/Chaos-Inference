@@ -16,7 +16,7 @@ export default class View {
     #tileSize = 16;
 
     // Controls how many fg tiles display along the canvas width
-    #fgTileDisplaySize = 51;
+    #fgTileDisplaySize = 24;
 
     // Used when drawing the bg to scale the tiles correctly
     #bgTileDisplayScale = 1 / (this.#fgTileDisplaySize / 10);
@@ -39,15 +39,30 @@ export default class View {
         this.renderLevelObjects(grid, hazardSprites, tokenSprites);
     }
 
-    renderPlayer(sprite, pos, dimensions) {
+    renderPlayer(sprite, pos, dimensions, direction) {
+
+        const right = 'right';
+        const left = 'left';
+
+        let sx = 0;
+        let sy = 0;
+
+        if (direction === left) {
+            sx = 16 * this.#tileUpscale;
+        }
 
         this.fgCtx.drawImage(
             sprite,
+            sx, sy,
+            this.#tileSize * this.#tileUpscale,
+            this.#tileSize * this.#tileUpscale * 2,
             pos.x * this.#fgTileDisplaySize,
             pos.y * this.#fgTileDisplaySize,
             dimensions.width * this.#fgTileDisplaySize,
             dimensions.height * this.#fgTileDisplaySize
         );
+
+        
 
         //this.renderHitbox(pos, dimensions);
     }

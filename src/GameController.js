@@ -122,7 +122,8 @@ export default class GameController {
         this.#view.renderPlayer(
             this.#playerSprite, 
             this.#game.getPlayerPosition(), 
-            this.#game.getPlayerDimensions()
+            this.#game.getPlayerDimensions(),
+            this.#game.getPlayerDirection()
         );
         this.#view.renderBgTiles(this.#bgTileset);
 

@@ -2,6 +2,11 @@ import Vector from "./Vector.js";
 
 export default class Move {
 
+    static playerDirection = Object.freeze({
+        LEFT: 'left',
+        RIGHT: 'right'
+    });
+
     // MOVEMENT SPEED //
 
     // Speed of horizontal movement
@@ -144,10 +149,12 @@ export default class Move {
 
             if (this.keys['ArrowLeft']) {
                 this.velX = -Move.speed;
+                this.player.direction = Move.playerDirection.LEFT;
             }
 
             if (this.keys['ArrowRight']) {
                 this.velX = Move.speed;
+                this.player.direction = Move.playerDirection.RIGHT;
             }
 
             if (this.keys['z']) {
