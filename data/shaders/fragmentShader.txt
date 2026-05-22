@@ -2,6 +2,7 @@ precision mediump float;
 
 uniform vec2 u_resolution;
 uniform float u_time;
+uniform vec2 u_playerCoord;
 
 float random (vec2 p) {
     return fract(sin(dot(p.xy,
@@ -36,6 +37,23 @@ float fbm(vec2 p) {
 
 void main() {
     vec2 st = gl_FragCoord.xy/u_resolution.xy;
+
+    vec2 player = vec2(
+        u_playerCoord.x,
+        u_resolution.y - u_playerCoord.y
+    ) / u_resolution.xy;
+
+    vec2 diff = st - player;
+
+    diff.x *= u_resolution.x / u_resolution.y;
+
+    float dPlayer = length(diff);
+    dPlayer -= 0.1;
+
+    float light = 1.0 - smoothstep(0.1, 0.5, dPlayer);
+    light = mix(0.01, 0.12, light);
+
+    float darkness = 1.0 - light;
     
     vec2 wind = vec2(0.08, -0.02);
     vec2 p = st * 3.0 + wind * u_time;
@@ -49,5 +67,5 @@ void main() {
 
     vec3 color = mix(bgColor, fogColor, fog);
 
-    gl_FragColor = vec4(color, 0.9);
+    gl_FragColor = vec4(color, darkness);
 }

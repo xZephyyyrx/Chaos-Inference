@@ -47,7 +47,7 @@ export default class GameController {
         this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
 
         try {
-            this.#fgTileset = await this.#dataloader.importTileset('appearancetest');
+            this.#fgTileset = await this.#dataloader.importTileset('appearancetestbright');
         } catch (error) {
             console.log(error);
         }

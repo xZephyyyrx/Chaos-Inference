@@ -93,7 +93,11 @@ export default class View {
         this.fgCtx.restore();
         this.bgCtx.restore();
 
-        this.updateShader((performance.now() - shaderTime) * 0.001);
+        this.updateShader(
+            (performance.now() - shaderTime) * 0.001, 
+            playerPos,
+            playerDimensions
+        );
     }
 
     setCameraPosition(grid, playerPos, playerDimensions) {
@@ -287,8 +291,14 @@ export default class View {
         this.bgCtx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
     }
 
-    updateShader(time) {
+    updateShader(time, playerPos, playerDimensions) {
         const gl = this.glCtx;
+        const playerScreenX =
+            (playerPos.x + playerDimensions.width / 2) * 
+            this.#fgTileDisplaySize - View.camera.x;
+        const playerScreenY =
+            (playerPos.y + playerDimensions.height / 2) * 
+            this.#fgTileDisplaySize - View.camera.y;
 
         gl.useProgram(this.shaderData.program);
 
@@ -298,6 +308,11 @@ export default class View {
             this.glCanvas.width,
             this.glCanvas.height
         );
+        gl.uniform2f(
+            this.shaderData.uniforms.playerCoord,
+            playerScreenX,
+            playerScreenY
+        )
 
         gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
 

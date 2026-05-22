@@ -36,8 +36,6 @@ export default class CompileShaders {
             throw new Error(gl.getProgramInfoLog(program));
         }
 
-        // Passes the screen resolution as a uniform
-        const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
 
         // Enable canvas blending
         gl.enable(gl.BLEND);
@@ -56,7 +54,8 @@ export default class CompileShaders {
             program,
             uniforms: {
                 resolution: gl.getUniformLocation(program, "u_resolution"),
-                time: gl.getUniformLocation(program, "u_time")
+                time: gl.getUniformLocation(program, "u_time"),
+                playerCoord: gl.getUniformLocation(program, "u_playerCoord")
             }
         }
     }
