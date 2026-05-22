@@ -43,7 +43,7 @@ export default class GameController {
 
     // TEST DATA FOR LOADING & RENDERING MAPS //
     async loadTestData() {
-        this.#gridmap = await this.#dataloader.importGridmap('thetube');
+        this.#gridmap = await this.#dataloader.importGridmap('level1grid');
         this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
 
         try {
