@@ -123,7 +123,6 @@ export default class Level {
 
         if (tile && tile.type === 'Token' && tile.activeState === true) {
             this.collectToken(tile.key);
-            console.log('token get!')
         }
 
         return result;

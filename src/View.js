@@ -1,5 +1,40 @@
 export default class View {
 
+    // MENU ATTRIBUTES //
+
+    static mainMenuType = 'main';
+    static tutorialMenuType = 'tutorial';
+    static storyMenuType = 'story';
+    static soundMenuType = 'sound';
+
+    static menuLineWidth = 2;
+
+    // Size of the options box determined by canvas width / optionsWidth
+    static optionsWidth = 3.3;
+
+    static returnOptionString = 'Return to Title Screen';
+
+    // Size of dialogue box is screenHeight / dialogue height
+    static dialogueHeight = 3;
+
+    static menuBgColour = 'rgb(0, 0, 0)';
+
+    static menuLineColour = 'rgb(255, 255, 255)';
+
+    static menuTextColour = 'rgb(255, 255, 255)';
+
+    static menuTextHighlight = 'rgb(255, 248, 131)';
+    static menuTextDark = View.menuBgColour;
+    static totalHighlightFlickerFrames = 120;
+    static activeStateHighlightFlickerFrames = View.totalHighlightFlickerFrames;
+
+    static menuFont = 'PacMan1980';
+
+    static previousMenuOption = null;
+    static previousScreenName = null;
+
+    // LEVEL ATTRIBUTES //
+
     static tileIdentifier = 'Tile';
 
     static hazardIdentifier = 'Hazard';
@@ -45,6 +80,207 @@ export default class View {
             top: this.fgCanvas.height * 0.4,
             bottom: this.fgCanvas.height * 0.6
         }
+    }
+
+    renderScreen(screenData, selectedOption) {
+        this.clearFg();
+        this.renderScreenBackground();
+        this.renderScreenRect(screenData.type);
+        this.renderScreenLayout(screenData.type);
+        this.renderScreenText(screenData.text, screenData.type);
+        this.renderScreenOptions(
+            screenData.options, 
+            screenData.type,
+            selectedOption,
+            screenData.name
+        );
+    }
+
+    renderScreenBackground() {
+        this.bgCtx.fillStyle = 'rgb(81, 112, 98)';
+        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+    }
+
+    renderScreenRect(type) {
+        const ctx = this.fgCtx;
+        const canvasWidth = this.fgCanvas.width;
+        const canvasHeight = this.fgCanvas.height;
+        const optionsWidth = canvasWidth / View.optionsWidth;
+        const dialogueHeight = canvasHeight / View.dialogueHeight * 2;
+
+        ctx.fillStyle = View.menuBgColour;
+        ctx.fillRect(0, 0, optionsWidth, canvasHeight);
+
+        if (type !== View.mainMenuType) {
+            ctx.fillRect(optionsWidth, dialogueHeight, canvasWidth, canvasHeight)
+        }
+    }
+
+    renderScreenLayout(type) {
+        const canvasWidth = this.fgCanvas.width;
+        const canvasHeight = this.fgCanvas.height;
+        const optionsWidth = canvasWidth / View.optionsWidth;
+        const dialogueHeight = canvasHeight / View.dialogueHeight * 2;
+
+        if (type === View.mainMenuType) {
+
+            // Options Panel
+            this.drawLayoutLine(
+                optionsWidth, 
+                optionsWidth,
+                0,
+                canvasHeight
+            )
+
+        } else if (type === View.tutorialMenuType ||
+                   type === View.storyMenuType
+        ) {
+            
+            // Options Panel
+            this.drawLayoutLine(
+                optionsWidth, 
+                optionsWidth,
+                0,
+                canvasHeight
+            )
+
+            // Dialogue Panel
+            this.drawLayoutLine(
+                optionsWidth,
+                canvasWidth,
+                dialogueHeight,
+                dialogueHeight
+            )
+        }
+    }
+
+    renderScreenText(text, type) {
+        const ctx = this.fgCtx;
+        const colour = View.menuTextColour;
+        const textXOffset = 1.05;
+        const textYOffset = 1.09;
+        const titleXOffset = 1.1;
+        const titleYOffset = 1.1;
+        const newLineYOffset = this.fgCanvas.height / 16;
+        const textSize = this.canvasWidth / 24;
+        const font = View.menuFont;
+        let x;
+        let y;
+
+
+        ctx.fillStyle = colour;
+        if (type === View.mainMenuType) {
+            ctx.font = `${textSize}px ${font}`;
+            x = (this.fgCanvas.width / View.optionsWidth) * titleXOffset;
+            y = (this.fgCanvas.height / (View.dialogueHeight * 3)) * titleYOffset;
+        } else {
+            ctx.font = `${textSize / 2}px ${font}`;
+            x = (this.fgCanvas.width / View.optionsWidth) * textXOffset;
+            y = (this.fgCanvas.height / View.dialogueHeight * 2) * textYOffset;
+        }
+        
+
+        if (text.length > 1 && Array.isArray(text)) {
+            Object.values(text).forEach((line, index) => {
+                ctx.fillText(line, x, y + (index * newLineYOffset));
+            });
+        } else {
+            ctx.fillText(text, x, y);
+        }
+    }
+
+    renderScreenOptions(options, type, selectedOption, screenName) {
+        const ctx = this.fgCtx;
+        const canvasWidth = this.fgCanvas.width;
+        const canvasHeight = this.fgCanvas.height;
+        const returnOption = View.returnOptionString;
+        const x = (canvasWidth / 64) * 1.4;
+        const y = canvasHeight / 16;
+        const newLineYOffset = canvasHeight / 14;
+        const returnYOffset = canvasHeight - (y + y * 0.5);
+        const colour = View.menuTextColour;
+        const highlight = View.menuTextHighlight;
+        const font = View.menuFont;
+        const textSize = canvasWidth / 48;
+        
+
+        ctx.font = `${textSize}px ${font}`;
+
+        Object.values(options).forEach((option, index) => {
+            if (option === selectedOption) {
+                if (option !== View.previousMenuOption ||
+                    screenName !== View.previousScreenName
+                ) {
+                    View.activeStateHighlightFlickerFrames = View.totalHighlightFlickerFrames;
+                }
+                View.previousMenuOption = option;
+                View.previousScreenName = screenName;
+                ctx.fillStyle = highlight;
+                if (!Array.isArray(option)) {
+                    this.drawCursor(x, y, index, newLineYOffset);
+                } else {
+                    this.drawCursor(x, 0, 1, returnYOffset);
+                }
+            } else {
+                ctx.fillStyle = colour;
+            }
+            if (!Array.isArray(option)) {
+                ctx.fillText(option, x, y + (newLineYOffset * index));
+            } else {
+                ctx.fillText(option[0], x, returnYOffset);
+                ctx.fillText(option[1], x - (canvasWidth / 300), canvasHeight - (y * 0.5));
+            }
+        });
+    }
+
+    drawCursor(x, y, index, offSet) {
+        const ctx = this.fgCtx;
+        const canvasWidth = this.fgCanvas.width;
+        const canvasHeight = this.fgCanvas.height;
+        const xStart = x / 3;
+        const xStep = xStart + canvasWidth / 96;
+        const yStart = y + (offSet * index);
+        const yStep = y - (canvasHeight / 32) + (offSet * index);
+        const yEnd = y - (canvasHeight / 64) + (offSet * index);
+
+        ctx.save();
+
+        let colour = View.menuTextHighlight;
+
+        if (View.activeStateHighlightFlickerFrames <= (View.totalHighlightFlickerFrames / 2)) {
+            colour = View.menuTextDark;
+        }
+
+        ctx.fillStyle = colour;
+        ctx.beginPath();
+        ctx.moveTo(xStart, yStart);
+        ctx.lineTo(xStart, yStep);
+        ctx.lineTo(xStep, yEnd);
+        ctx.lineTo(xStart, yStart);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = colour;
+        ctx.fill();
+
+        ctx.restore();
+
+        View.activeStateHighlightFlickerFrames--;
+
+        if (View.activeStateHighlightFlickerFrames <= 0) {
+            View.activeStateHighlightFlickerFrames = View.totalHighlightFlickerFrames;
+        }
+    }
+
+    drawLayoutLine(xStart, xEnd, yStart, yEnd) {
+        const ctx = this.fgCtx;
+        const lineWidth = View.menuLineWidth;
+        const colour = View.menuLineColour;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yStart);
+        ctx.lineTo(xEnd, yEnd);
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = colour;
+        ctx.stroke();
     }
 
     renderAll(

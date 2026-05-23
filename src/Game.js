@@ -2,15 +2,80 @@ import Level from "./Level.js";
 import ObjectParser from "./ObjectParser.js";
 import Vector from "./Vector.js";
 import Move from "./Move.js";
+import Menu from "./Menu.js";
+import MenuScreens from "./MenuScreens.js";
 
 export default class Game {
+
+    static options = Object.freeze({
+        START: 'Start Game',
+        TUTORIAL: 'View Tutorial',
+        STORY: 'View Story',
+        NEXT: 'Next Page',
+        PREVIOUS: 'Previous Page',
+        RETURN: ['Return to', 'Title Screen']
+    });
+
+    static screenNames = Object.freeze({
+        MAIN: 'titleScreen',
+        TUTORIAL: 'tutorial',
+        STORY: 'story',
+        SOUND: 'soundOptions'
+    });
+
+    static initialMenuScreen = Game.screenNames.MAIN;
+
     #allLevels = [];
-    #currentLevel;
+    #allMenuScreens = [];
+    #currentMenuScreen;
+    #currentMenuSelection;
+    #currentLevel = null;
     #currentLevelNum;
     #state = {
-        level: null
+        inLevel: false,
     }
     #player;
+    #arrowDownRelease = true;
+    #arrowUpRelease = true;
+    #zRelease = true;
+
+    // TITLE SCREENS //
+
+    initializeMenu() {
+        this.importScreens();
+        this.setCurrentScreen();
+        this.#currentMenuSelection = this.#currentMenuScreen.options[0];
+    }
+
+    importScreens() {
+        Object.entries(MenuScreens.allScreens).forEach(([screen, values]) => {
+            let newScreen = new Menu(
+                screen,
+                values.type,
+                values.options,
+                values.text
+            );
+
+            this.#allMenuScreens.push(newScreen);
+        });
+    }
+
+    setCurrentScreen(screenName = Game.initialMenuScreen) {
+        let newScreen = this.#allMenuScreens.find(screen => screen.name === screenName);
+        if (newScreen) {
+            this.#currentMenuScreen = newScreen;
+            this.#currentMenuSelection = newScreen.options[0];
+        }
+    }
+
+    getScreenDetails() {
+        return {
+            name: this.#currentMenuScreen.name,
+            type: this.#currentMenuScreen.type,
+            options: this.#currentMenuScreen.options,
+            text: this.#currentMenuScreen.text
+        }
+    }
 
     // LOAD GRIDMAP //
 
@@ -25,7 +90,7 @@ export default class Game {
 
         if (gridmap) {
             const newLevel = new Level(gridmap);
-            this.#state.level = true;
+            //this.#state.inLevel = true;
             this.#state.playerAlive = true;
             this.#currentLevel = newLevel;
             this.createPlayer(gridmap);
@@ -49,7 +114,14 @@ export default class Game {
     // Controlling Player
 
     update(deltaTime, keys) {
+        if (this.#state.inLevel) {
+            this.handleMovement(deltaTime, keys);
+        } else {
+            this.handleMenuSelections(keys);
+        }
+    }
 
+    handleMovement(deltaTime, keys) {
         let newMove = new Move(
             this.#currentLevel, 
             this.#player,
@@ -77,6 +149,77 @@ export default class Game {
         }
     }
 
+    handleMenuSelections(keys) {
+        const currentScreen = this.#currentMenuScreen;
+        const selection = this.#currentMenuSelection;
+        if (keys['ArrowDown'] && this.#arrowDownRelease) {
+            let index = currentScreen.options.indexOf(selection);
+            if (currentScreen.options.length <= index + 1) {
+                index = 0;
+            } else {
+                index += 1;
+            }
+            this.#currentMenuSelection = currentScreen.options[index];
+            this.#arrowDownRelease = false;
+        }
+
+        if (keys['ArrowUp'] && this.#arrowUpRelease) {
+            let index = currentScreen.options.indexOf(selection);
+            if (index <= 0) {
+                index = currentScreen.options.length - 1;
+            } else {
+                index -= 1;
+            }
+            this.#currentMenuSelection = currentScreen.options[index];
+            this.#arrowUpRelease = false;
+        }
+
+        if (keys['z'] && this.#zRelease) {
+            this.handleScreenChange();
+            this.#zRelease = false;
+        } 
+
+        if (!keys['ArrowDown']) {
+            this.#arrowDownRelease = true;
+        }
+
+        if (!keys['ArrowUp']) {
+            this.#arrowUpRelease = true;
+        }
+
+        if (!keys['z']) {
+            this.#zRelease = true;
+        }
+    }
+
+    handleScreenChange() {
+        const selection = this.#currentMenuSelection;
+        const screen = this.#currentMenuScreen;
+
+        if (selection === Game.options.TUTORIAL) {
+            this.setCurrentScreen(`${Game.screenNames.TUTORIAL}1`);
+        } else if (selection === Game.options.STORY) {
+            this.setCurrentScreen(`${Game.screenNames.STORY}1`);
+        } else if (selection === Game.options.NEXT) {
+            const pageNum = screen.name.slice(-1);
+            this.setCurrentScreen(`` +
+                `${screen.name.slice(0, -1)}` +
+                `${parseInt(pageNum, 10) + 1}`
+            )
+        } else if (selection === Game.options.PREVIOUS) {
+            const pageNum = screen.name.slice(-1);
+            this.setCurrentScreen(`` +
+                `${screen.name.slice(0, -1)}` +
+                `${parseInt(pageNum, 10) - 1}`
+            );
+        } else if (Array.isArray(selection)) {
+            this.setCurrentScreen(`${Game.screenNames.MAIN}`);
+        } else if (selection === Game.options.START) {
+            this.#currentMenuSelection = this.#currentMenuScreen.options[0];
+            this.#state.inLevel = true;
+        }
+    }
+
     // Retriving Player data
 
     getPlayerPosition() {
@@ -94,15 +237,19 @@ export default class Game {
         return this.#player.direction;
     }
 
-    get player() {
-        return this.#player;
-    }
-
     getCurrentLevelTiles() {
         return this.#currentLevel.levelTiles;
     }
 
+    get player() {
+        return this.#player;
+    }
+
     get state() {
         return this.#state;
+    }
+
+    get currentMenuSelection() {
+        return this.#currentMenuSelection;
     }
 }

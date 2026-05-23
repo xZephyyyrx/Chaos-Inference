@@ -83,6 +83,8 @@ export default class GameController {
     async setup() {
         await this.loadTestData();
 
+        this.#game.initializeMenu();
+
         this.initializeLevel();
     }
 
@@ -102,6 +104,25 @@ export default class GameController {
         const deltaTime = (time - this.#lastTime) / 1000;
         this.#lastTime = time;
 
+        if (this.#game.state.inLevel) {
+            this.runLevel();
+        } else {
+            this.#view.renderScreen(
+                this.#game.getScreenDetails(), 
+                this.#game.currentMenuSelection
+            );
+        }
+
+        // Read player inputs
+
+        this.#game.update(deltaTime, this.#activeKeys);
+
+        // LOOP //
+
+        requestAnimationFrame((t) => this.runGame(t));
+    }
+
+    runLevel() {
         // UPDATE VIEW //
         this.#view.clearFg();
         this.#view.renderAll(
@@ -117,13 +138,5 @@ export default class GameController {
             this.#bgTileset,
             this.#shaderTime
         )
-
-        // Read player inputs
-
-        this.#game.update(deltaTime, this.#activeKeys);
-
-        // LOOP //
-
-        requestAnimationFrame((t) => this.runGame(t));
     }
 }
