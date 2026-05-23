@@ -13,7 +13,9 @@ export default class Game {
         STORY: 'View Story',
         NEXT: 'Next Page',
         PREVIOUS: 'Previous Page',
-        RETURN: ['Return to', 'Title Screen']
+        RETURN: ['Return to', 'Title Screen'],
+        PLAYSOUND: 'Yes',
+        DISABLESOUND: 'No'
     });
 
     static screenNames = Object.freeze({
@@ -23,7 +25,14 @@ export default class Game {
         SOUND: 'soundOptions'
     });
 
-    static initialMenuScreen = Game.screenNames.MAIN;
+    static screenTypes = Object.freeze({
+        MAIN: 'main',
+        TUTORIAL: 'tutorial',
+        STORY: 'story',
+        SOUND: 'sound'
+    });
+
+    static initialMenuScreen = Game.screenNames.SOUND;
 
     #allLevels = [];
     #allMenuScreens = [];
@@ -33,10 +42,13 @@ export default class Game {
     #currentLevelNum;
     #state = {
         inLevel: false,
+        enableSound: false
     }
     #player;
     #arrowDownRelease = true;
     #arrowUpRelease = true;
+    #arrowLeftRelease = true;
+    #arrowRightRelease = true;
     #zRelease = true;
 
     // TITLE SCREENS //
@@ -141,10 +153,6 @@ export default class Game {
             this.#currentLevel = null;
             this.#player = null;
 
-            this.#state = {
-                level: false
-            }
-
             this.loadLevel(this.#currentLevelNum);
         }
     }
@@ -152,7 +160,10 @@ export default class Game {
     handleMenuSelections(keys) {
         const currentScreen = this.#currentMenuScreen;
         const selection = this.#currentMenuSelection;
-        if (keys['ArrowDown'] && this.#arrowDownRelease) {
+        if (keys['ArrowDown'] && 
+            this.#arrowDownRelease && 
+            currentScreen.type !== Game.screenTypes.SOUND
+        ) {
             let index = currentScreen.options.indexOf(selection);
             if (currentScreen.options.length <= index + 1) {
                 index = 0;
@@ -163,7 +174,10 @@ export default class Game {
             this.#arrowDownRelease = false;
         }
 
-        if (keys['ArrowUp'] && this.#arrowUpRelease) {
+        if (keys['ArrowUp'] && 
+            this.#arrowUpRelease &&
+            currentScreen.type !== Game.screenTypes.SOUND
+        ) {
             let index = currentScreen.options.indexOf(selection);
             if (index <= 0) {
                 index = currentScreen.options.length - 1;
@@ -175,16 +189,58 @@ export default class Game {
         }
 
         if (keys['z'] && this.#zRelease) {
-            this.handleScreenChange();
+            if (currentScreen.type !== Game.screenTypes.SOUND) {
+                this.handleScreenChange();
+            } else {
+                if (selection === Game.options.PLAYSOUND) {
+                    this.handleScreenChange();
+                    this.#state.enableSound = true;
+                } else {
+                    this.handleScreenChange();
+                }
+            }
+            
             this.#zRelease = false;
-        } 
+        }
+
+        if (keys['ArrowLeft'] && 
+            this.#arrowLeftRelease &&
+            currentScreen.type === Game.screenTypes.SOUND) {
+            let index = currentScreen.options.indexOf(selection);
+            if (index === 0) {
+                this.#currentMenuSelection = currentScreen.options[1];
+            }  else {
+                this.#currentMenuSelection = currentScreen.options[0];
+            }
+            this.#arrowLeftRelease = false;
+        }
+
+        if (keys['ArrowRight'] && 
+            this.#arrowRightRelease &&
+            currentScreen.type === Game.screenTypes.SOUND) {
+            let index = currentScreen.options.indexOf(selection);
+            if (index === 0) {
+                this.#currentMenuSelection = currentScreen.options[1];
+            }  else {
+                this.#currentMenuSelection = currentScreen.options[0];
+            }
+            this.#arrowRightRelease = false;
+        }
 
         if (!keys['ArrowDown']) {
             this.#arrowDownRelease = true;
         }
 
+        if (!keys['ArrowLeft']) {
+            this.#arrowLeftRelease = true;
+        }
+
         if (!keys['ArrowUp']) {
             this.#arrowUpRelease = true;
+        }
+
+        if (!keys['ArrowRight']) {
+            this.#arrowRightRelease = true;
         }
 
         if (!keys['z']) {
@@ -217,6 +273,10 @@ export default class Game {
         } else if (selection === Game.options.START) {
             this.#currentMenuSelection = this.#currentMenuScreen.options[0];
             this.#state.inLevel = true;
+        } else if (selection === Game.options.PLAYSOUND ||
+                   selection === Game.options.DISABLESOUND
+        ) {
+            this.setCurrentScreen(`${Game.screenNames.MAIN}`);
         }
     }
 

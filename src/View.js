@@ -111,8 +111,12 @@ export default class View {
         ctx.fillStyle = View.menuBgColour;
         ctx.fillRect(0, 0, optionsWidth, canvasHeight);
 
-        if (type !== View.mainMenuType) {
+        if (type !== View.mainMenuType &&
+            type !== View.soundMenuType
+        ) {
             ctx.fillRect(optionsWidth, dialogueHeight, canvasWidth, canvasHeight)
+        } else if (type === View.soundMenuType) {
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
     }
 
@@ -157,6 +161,8 @@ export default class View {
     renderScreenText(text, type) {
         const ctx = this.fgCtx;
         const colour = View.menuTextColour;
+        const canvasWidth = this.fgCanvas.width;
+        const canvasHeight = this.fgCanvas.height;
         const textXOffset = 1.05;
         const textYOffset = 1.09;
         const titleXOffset = 1.1;
@@ -171,12 +177,16 @@ export default class View {
         ctx.fillStyle = colour;
         if (type === View.mainMenuType) {
             ctx.font = `${textSize}px ${font}`;
-            x = (this.fgCanvas.width / View.optionsWidth) * titleXOffset;
-            y = (this.fgCanvas.height / (View.dialogueHeight * 3)) * titleYOffset;
+            x = (canvasWidth / View.optionsWidth) * titleXOffset;
+            y = (canvasHeight / (View.dialogueHeight * 3)) * titleYOffset;
+        } else if (type !== View.soundMenuType) {
+            ctx.font = `${textSize / 2}px ${font}`;
+            x = (canvasWidth / View.optionsWidth) * textXOffset;
+            y = (canvasHeight / View.dialogueHeight * 2) * textYOffset;
         } else {
             ctx.font = `${textSize / 2}px ${font}`;
-            x = (this.fgCanvas.width / View.optionsWidth) * textXOffset;
-            y = (this.fgCanvas.height / View.dialogueHeight * 2) * textYOffset;
+            x = canvasWidth / 3;
+            y = canvasHeight / 2.5;
         }
         
 
@@ -194,15 +204,20 @@ export default class View {
         const canvasWidth = this.fgCanvas.width;
         const canvasHeight = this.fgCanvas.height;
         const returnOption = View.returnOptionString;
-        const x = (canvasWidth / 64) * 1.4;
-        const y = canvasHeight / 16;
+        let x = (canvasWidth / 64) * 1.4;
+        let y = canvasHeight / 16;
         const newLineYOffset = canvasHeight / 14;
+        const xOffset = canvasWidth / 6;
         const returnYOffset = canvasHeight - (y + y * 0.5);
         const colour = View.menuTextColour;
         const highlight = View.menuTextHighlight;
         const font = View.menuFont;
         const textSize = canvasWidth / 48;
         
+        if (type === View.soundMenuType) {
+            x = canvasWidth / 2.75;
+            y  = canvasHeight / 20 * 11;
+        }
 
         ctx.font = `${textSize}px ${font}`;
 
@@ -216,32 +231,54 @@ export default class View {
                 View.previousMenuOption = option;
                 View.previousScreenName = screenName;
                 ctx.fillStyle = highlight;
-                if (!Array.isArray(option)) {
-                    this.drawCursor(x, y, index, newLineYOffset);
+                if (type !== View.soundMenuType) {
+                    if (!Array.isArray(option)) {
+                        this.drawCursor(x, y, index, newLineYOffset, type);
+                    } else {
+                        this.drawCursor(x, 0, 1, returnYOffset, type);
+                    }
                 } else {
-                    this.drawCursor(x, 0, 1, returnYOffset);
+                    this.drawCursor(x, y, index, xOffset, type);
                 }
+                
             } else {
                 ctx.fillStyle = colour;
             }
-            if (!Array.isArray(option)) {
-                ctx.fillText(option, x, y + (newLineYOffset * index));
+            if (type !== View.soundMenuType) {
+                if (!Array.isArray(option)) {
+                    ctx.fillText(option, x, y + (newLineYOffset * index));
+                } else {
+                    ctx.fillText(option[0], x, returnYOffset);
+                    ctx.fillText(option[1], x - (canvasWidth / 300), canvasHeight - (y * 0.5));
+                }
             } else {
-                ctx.fillText(option[0], x, returnYOffset);
-                ctx.fillText(option[1], x - (canvasWidth / 300), canvasHeight - (y * 0.5));
+                ctx.fillText(
+                    option, 
+                    x + (xOffset * index), 
+                    y
+                );
+
             }
         });
     }
 
-    drawCursor(x, y, index, offSet) {
+    drawCursor(x, y, index, offSet, type) {
         const ctx = this.fgCtx;
         const canvasWidth = this.fgCanvas.width;
         const canvasHeight = this.fgCanvas.height;
-        const xStart = x / 3;
-        const xStep = xStart + canvasWidth / 96;
-        const yStart = y + (offSet * index);
-        const yStep = y - (canvasHeight / 32) + (offSet * index);
-        const yEnd = y - (canvasHeight / 64) + (offSet * index);
+        let xStart = x / 3;
+        let xStep = xStart + canvasWidth / 96;
+        let yStart = y + (offSet * index);
+        let yStep = y - (canvasHeight / 32) + (offSet * index);
+        let yEnd = y - (canvasHeight / 64) + (offSet * index);
+
+        if (type === View.soundMenuType) {
+            xStart = x - (canvasWidth / 96) + (offSet * index);
+            xStep = xStart + canvasWidth / 96;
+            yStart = y;
+            yStep = y - (canvasHeight / 32);
+            yEnd = y - (canvasHeight / 64);
+        }
 
         ctx.save();
 

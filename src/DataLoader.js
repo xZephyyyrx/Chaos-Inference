@@ -26,6 +26,10 @@ export default class DataLoader {
 
     // Appends the correct filetype to tilemap filenames
     #tilemapFiletype = '.json';
+
+    #musicFilepath = 'music/';
+
+    #musicFiletype = '.ogg';
     
     async importGridmap(filename) {
         return await this.importText(this.#gridmapFilepath, filename);
@@ -96,7 +100,24 @@ export default class DataLoader {
         } catch (error) {
             console.log(error);
         }
-        
+    }
+
+    async importMusic(filename) {
+        const music = new Audio();
+        music.src = `${this.#filepathPrefix}` +
+                      `${this.#musicFilepath}` +
+                      `${filename}` +
+                      `${this.#musicFiletype}`;
+
+        await new Promise((resolve, reject) => {
+            music.oncanplaythrough = resolve;
+            music.onerror = () => 
+                reject(new Error(`Failed to load ${filename}${this.#musicFiletype}!`));
+        });
+
+        music.loop = true;
+
+        return music;
     }
 
     // Converts map data from raw text to a multidimensional array containing

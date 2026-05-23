@@ -13,6 +13,8 @@ export default class GameController {
     #shaderTime;
     #lastTime;
     #activeKeys = {};
+    #ostTitle;
+    #currentlyPlayingMusic = false;
 
     constructor(game, view, dataloader) {
         // Game Logic //
@@ -75,6 +77,12 @@ export default class GameController {
         } catch (error) {
             console.log(error);
         }
+
+        try {
+            this.#ostTitle = await this.#dataloader.importMusic('darkclouds8bitwave');
+        } catch (error) {
+            console.log(error);
+        }
         
         this.#fgTilesetMap = await this.#dataloader.importTilesetMap('level1fgtilemap');
     }
@@ -116,6 +124,11 @@ export default class GameController {
         // Read player inputs
 
         this.#game.update(deltaTime, this.#activeKeys);
+
+        if (this.#game.state.enableSound && !this.#currentlyPlayingMusic) {
+            this.#ostTitle.play();
+            this.#currentlyPlayingMusic = true;
+        }
 
         // LOOP //
 
