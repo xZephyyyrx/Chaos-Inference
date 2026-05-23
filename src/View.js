@@ -7,6 +7,8 @@ export default class View {
     static storyMenuType = 'story';
     static soundMenuType = 'sound';
 
+    static menuBgTimeOffset = 0;
+
     static menuLineWidth = 2;
 
     // Size of the options box determined by canvas width / optionsWidth
@@ -80,10 +82,11 @@ export default class View {
         }
     }
 
-    renderScreen(screenData, selectedOption) {
+    renderScreen(screenData, selectedOption, time, bgTileset) {
+        View.menuBgTimeOffset += time;
         this.fgCtx.resetTransform();
         this.clearFg();
-        this.renderScreenBackground();
+        this.renderScreenBackground(bgTileset);
         this.renderScreenRect(screenData.type);
         this.renderScreenLayout(screenData.type);
         this.renderScreenText(screenData.text, screenData.type);
@@ -95,8 +98,28 @@ export default class View {
         );
     }
 
-    renderScreenBackground() {
-        this.bgCtx.fillStyle = 'rgb(81, 112, 98)';
+    renderScreenBackground(tileset) {
+        const bgPattern = this.bgCtx.createPattern(tileset, 'repeat');
+        const matrix = new DOMMatrix();
+        const scale = this.bgCanvas.width / 1145;
+        matrix.scaleSelf(scale, scale);
+
+        const scrollSpeedModifier = -30;
+
+        matrix.translateSelf(
+            View.menuBgTimeOffset * scrollSpeedModifier,
+            0
+        )
+
+        bgPattern.setTransform(matrix);
+
+        this.bgCtx.clearRect(
+            0, 0,
+            this.bgCanvas.width,
+            this.bgCanvas.height
+        )
+
+        this.bgCtx.fillStyle = bgPattern;
         this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
     }
 

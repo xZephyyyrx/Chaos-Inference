@@ -1,6 +1,7 @@
 export default class GameController {
     // Currently Loaded Assets //
     #gridmap;
+    #titleBg;
     #bgTileset;
     #fgTileset;
     #fgTilesetMap;
@@ -47,6 +48,12 @@ export default class GameController {
     async loadTestData() {
         this.#gridmap = await this.#dataloader.importGridmap('level1grid');
         this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
+
+        try {
+            this.#titleBg = await this.#dataloader.importTileset('titlebg');
+        } catch (error) {
+            console.log(error);
+        }
 
         try {
             this.#fgTileset = await this.#dataloader.importTileset('appearancetestscaffold');
@@ -117,7 +124,9 @@ export default class GameController {
         } else {
             this.#view.renderScreen(
                 this.#game.getScreenDetails(), 
-                this.#game.currentMenuSelection
+                this.#game.currentMenuSelection,
+                deltaTime,
+                this.#titleBg
             );
         }
 
