@@ -52,7 +52,6 @@ export default class InitializeCanvases {
         // Transformation is not applied to webgl canvas
         if (!isGl) {
             ctx.imageSmoothingEnabled = false;
-            ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
         }
     }
 }

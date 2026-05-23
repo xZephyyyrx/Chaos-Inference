@@ -62,8 +62,6 @@ const shaderData = await compileShaders();
 const clientWidth = fgCanvas.clientWidth;
 
 const view = new View(
-    InitializeCanvases.scaledCanvasWidth, 
-    InitializeCanvases.scaledCanvasHeight,
     clientWidth,
     shaderData,
     bgCanvas, 

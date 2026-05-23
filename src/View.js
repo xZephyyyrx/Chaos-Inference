@@ -63,9 +63,7 @@ export default class View {
     // Used when drawing the bg to scale the tiles correctly
     #bgTileDisplayScale = 1 / (this.#fgTileDisplaySize / 10);
 
-    constructor(canvasWidth, canvasHeight, clientWidth, shaderData, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx) {
-        this.canvasWidth = canvasWidth ;
-        this.canvasHeight = canvasHeight;
+    constructor(clientWidth, shaderData, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx) {
         this.#fgTileDisplaySize = clientWidth / this.#fgTileDisplaySize;
         this.shaderData = shaderData;
         this.bgCanvas = bgCanvas;
@@ -83,6 +81,7 @@ export default class View {
     }
 
     renderScreen(screenData, selectedOption) {
+        this.fgCtx.resetTransform();
         this.clearFg();
         this.renderScreenBackground();
         this.renderScreenRect(screenData.type);
@@ -168,7 +167,7 @@ export default class View {
         const titleXOffset = 1.1;
         const titleYOffset = 1.1;
         const newLineYOffset = this.fgCanvas.height / 16;
-        const textSize = this.canvasWidth / 24;
+        const textSize = canvasWidth / 24;
         const font = View.menuFont;
         let x;
         let y;
@@ -561,7 +560,7 @@ export default class View {
         bgPattern.setTransform(matrix);
 
         this.bgCtx.fillStyle = bgPattern;
-        this.bgCtx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
     }
 
     updateShader(time, playerPos, playerDimensions) {
@@ -595,6 +594,6 @@ export default class View {
     }
 
     clearFg() {
-        this.fgCtx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+        this.fgCtx.clearRect(0, 0, this.fgCanvas.width, this.fgCanvas.height);
     }
 }
