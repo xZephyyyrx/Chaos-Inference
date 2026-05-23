@@ -150,7 +150,7 @@ export default class MenuScreens {
             ],
             text: [
                 'Hazel is a young context-',
-                'engineer tasked with',
+                'engineer is tasked with',
                 'recontextualizing the bad',
                 'prompt.'
             ]
