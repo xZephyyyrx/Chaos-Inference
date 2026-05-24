@@ -157,7 +157,7 @@ export default class Move {
                 this.player.direction = Move.playerDirection.RIGHT;
             }
 
-            if (this.keys['z']) {
+            if (this.keys['z'] && Move.zKeyRelease) {
 
                 ///////////////
                 // WALLJUMPS //

@@ -133,7 +133,7 @@ export default class GameController {
         this.#lastTime = time;
 
         if (this.#game.state.inLevel) {
-            this.runLevel();
+            this.callLevelRender();
         } else {
             this.#view.renderScreen(
                 this.#game.getScreenDetails(), 
@@ -145,7 +145,17 @@ export default class GameController {
 
         // Read player inputs
 
-        this.#game.update(deltaTime, this.#activeKeys);
+        if (!this.#game.state.paused) {
+            this.#game.update(deltaTime, this.#activeKeys);
+        } else {
+            this.callLevelRender();
+            this.#view.renderPauseScreen(
+                this.#game.getScreenDetails(),
+                this.#game.currentMenuSelection,
+                deltaTime
+            );
+            this.#game.runPauseScreen(this.#activeKeys);
+        }
 
         this.handleMusic();
 
@@ -154,7 +164,7 @@ export default class GameController {
         requestAnimationFrame((t) => this.runGame(t));
     }
 
-    runLevel() {
+    callLevelRender() {
         // UPDATE VIEW //
         this.#view.clearFg();
         this.#view.renderAll(

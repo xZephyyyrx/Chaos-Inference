@@ -4,7 +4,8 @@ export default class MenuScreens {
         MAIN: 'main',
         SOUND: 'sound',
         TUTORIAL: 'tutorial',
-        STORY: 'story'
+        STORY: 'story',
+        PAUSE: 'pause'
     });
 
     static allScreens = {
@@ -28,6 +29,15 @@ export default class MenuScreens {
                 'View Story'
             ],
             text: 'Chaos Inference'
+        },
+
+        pauseScreen: {
+            type: MenuScreens.menuTypes.PAUSE,
+            options: [
+                'Yes',
+                'No'
+            ],
+            text: 'Return to Title Screen?'
         },
 
         tutorial1: {

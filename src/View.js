@@ -6,6 +6,7 @@ export default class View {
     static tutorialMenuType = 'tutorial';
     static storyMenuType = 'story';
     static soundMenuType = 'sound';
+    static pauseMenuType = 'pause';
 
     static menuBgTimeOffset = 0;
 
@@ -85,6 +86,7 @@ export default class View {
     renderScreen(screenData, selectedOption, time, bgTileset) {
         View.menuBgTimeOffset += time;
         this.fgCtx.resetTransform();
+        this.clearShaders();
         this.clearFg();
         this.renderScreenBackground(bgTileset);
         this.renderScreenRect(screenData.type);
@@ -96,6 +98,24 @@ export default class View {
             selectedOption,
             screenData.name
         );
+    }
+
+    renderPauseScreen(screenData, selectedOption, time) {
+        View.menuBgTimeOffset += time;
+        this.renderPauseScreenOverlay();
+        this.renderScreenText(screenData.text, screenData.type);
+        this.renderScreenOptions(
+            screenData.options, 
+            screenData.type, 
+            selectedOption, 
+            screenData.screenName)
+    }
+
+    renderPauseScreenOverlay() {
+        const colour = 'rgba(0, 0, 0, 0.5';
+
+        this.fgCtx.fillStyle = colour;
+        this.fgCtx.fillRect(0, 0, this.fgCanvas.width, this.fgCanvas.height);
     }
 
     renderScreenBackground(tileset) {
@@ -201,16 +221,19 @@ export default class View {
             ctx.font = `${textSize}px ${font}`;
             x = (canvasWidth / View.optionsWidth) * titleXOffset;
             y = (canvasHeight / (View.dialogueHeight * 3)) * titleYOffset;
-        } else if (type !== View.soundMenuType) {
-            ctx.font = `${textSize / 2}px ${font}`;
-            x = (canvasWidth / View.optionsWidth) * textXOffset;
-            y = (canvasHeight / View.dialogueHeight * 2) * textYOffset;
-        } else {
+        } else if (type === View.soundMenuType) {
             ctx.font = `${textSize / 2}px ${font}`;
             x = canvasWidth / 3;
             y = canvasHeight / 2.5;
+        } else if (type === View.pauseMenuType) {
+            ctx.font = `${textSize / 2}px ${font}`;
+            x = canvasWidth / 4.3;
+            y = canvasHeight / 2.5;
+        } else {
+            ctx.font = `${textSize / 2}px ${font}`;
+            x = (canvasWidth / View.optionsWidth) * textXOffset;
+            y = (canvasHeight / View.dialogueHeight * 2) * textYOffset;
         }
-        
 
         if (type !== View.soundMenuType) {
             if (text.length > 1 && Array.isArray(text)) {
@@ -242,7 +265,9 @@ export default class View {
         const font = View.menuFont;
         const textSize = canvasWidth / 48;
         
-        if (type === View.soundMenuType) {
+        if (type === View.soundMenuType || 
+            type === View.pauseMenuType
+        ) {
             x = canvasWidth / 2.75;
             y  = canvasHeight / 20 * 11;
         }
@@ -259,7 +284,9 @@ export default class View {
                 View.previousMenuOption = option;
                 View.previousScreenName = screenName;
                 ctx.fillStyle = highlight;
-                if (type !== View.soundMenuType) {
+                if (type !== View.soundMenuType &&
+                    type !== View.pauseMenuType
+                ) {
                     if (!Array.isArray(option)) {
                         this.drawCursor(x, y, index, newLineYOffset, type);
                     } else {
@@ -272,7 +299,9 @@ export default class View {
             } else {
                 ctx.fillStyle = colour;
             }
-            if (type !== View.soundMenuType) {
+            if (type !== View.soundMenuType &&
+                type !== View.pauseMenuType
+            ) {
                 if (!Array.isArray(option)) {
                     ctx.fillText(option, x, y + (newLineYOffset * index));
                 } else {
@@ -300,7 +329,9 @@ export default class View {
         let yStep = y - (canvasHeight / 32) + (offSet * index);
         let yEnd = y - (canvasHeight / 64) + (offSet * index);
 
-        if (type === View.soundMenuType) {
+        if (type === View.soundMenuType ||
+            type === View.pauseMenuType
+        ) {
             xStart = x - (canvasWidth / 96) + (offSet * index);
             xStep = xStart + canvasWidth / 96;
             yStart = y;
@@ -624,5 +655,10 @@ export default class View {
 
     clearFg() {
         this.fgCtx.clearRect(0, 0, this.fgCanvas.width, this.fgCanvas.height);
+    }
+
+    clearShaders() {
+        this.glCtx.clearColor(0, 0, 0, 0);
+        this.glCtx.clear(this.glCtx.COLOR_BUFFER_BIT);
     }
 }

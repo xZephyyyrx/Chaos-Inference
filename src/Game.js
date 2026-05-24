@@ -22,14 +22,16 @@ export default class Game {
         MAIN: 'titleScreen',
         TUTORIAL: 'tutorial',
         STORY: 'story',
-        SOUND: 'soundOptions'
+        SOUND: 'soundOptions',
+        PAUSE: 'pauseScreen'
     });
 
     static screenTypes = Object.freeze({
         MAIN: 'main',
         TUTORIAL: 'tutorial',
         STORY: 'story',
-        SOUND: 'sound'
+        SOUND: 'sound',
+        PAUSE: 'pause'
     });
 
     static initialMenuScreen = Game.screenNames.SOUND;
@@ -42,7 +44,8 @@ export default class Game {
     #currentLevelNum;
     #state = {
         inLevel: false,
-        enableSound: false
+        enableSound: false,
+        paused: false
     }
     #player;
     #arrowDownRelease = true;
@@ -50,6 +53,7 @@ export default class Game {
     #arrowLeftRelease = true;
     #arrowRightRelease = true;
     #zRelease = true;
+    #escRelease = true;
 
     // TITLE SCREENS //
 
@@ -86,6 +90,70 @@ export default class Game {
             type: this.#currentMenuScreen.type,
             options: this.#currentMenuScreen.options,
             text: this.#currentMenuScreen.text
+        }
+    }
+
+    runPauseScreen(keys) {
+
+        const currentScreen = this.#currentMenuScreen;
+        const selection = this.#currentMenuSelection;
+        const confirm = 'Yes';
+        const cancel = 'No';
+
+        if (keys['Escape'] && this.#escRelease) {
+            this.#state.paused = false;
+            this.#escRelease = false;
+            this.setCurrentScreen(Game.screenNames.MAIN);
+        }
+
+        if (keys['ArrowLeft'] && 
+            this.#arrowLeftRelease) {
+            let index = currentScreen.options.indexOf(selection);
+            if (index === 0) {
+                this.#currentMenuSelection = currentScreen.options[1];
+            }  else {
+                this.#currentMenuSelection = currentScreen.options[0];
+            }
+            this.#arrowLeftRelease = false;
+        }
+
+        if (keys['ArrowRight'] && 
+            this.#arrowRightRelease) {
+            let index = currentScreen.options.indexOf(selection);
+            if (index === 0) {
+                this.#currentMenuSelection = currentScreen.options[1];
+            }  else {
+                this.#currentMenuSelection = currentScreen.options[0];
+            }
+            this.#arrowRightRelease = false;
+        }
+
+        if (keys['z'] && this.#zRelease) {
+            this.#state.paused = false;
+            this.setCurrentScreen(Game.screenNames.MAIN);
+
+            if (selection === confirm) {
+                this.#state.inLevel = false;
+            }
+
+            this.#zRelease = false;
+            Move.zKeyRelease = false;
+        }
+
+        if (!keys['z']) {
+            this.#zRelease = true;
+        }
+
+        if (!keys['ArrowRight']) {
+            this.#arrowRightRelease = true;
+        }
+
+        if (!keys['ArrowLeft']) {
+            this.#arrowLeftRelease = true;
+        }
+
+        if (!keys['Escape']) {
+            this.#escRelease = true;
         }
     }
 
@@ -140,6 +208,16 @@ export default class Game {
             keys,
             deltaTime
         )
+
+        if (!keys['Escape']) {
+            this.#escRelease = true;
+        }
+
+        if (keys['Escape'] && this.#escRelease) {
+            this.#state.paused = true;
+            this.#escRelease = false;
+            this.setCurrentScreen(Game.screenNames.PAUSE);
+        }
 
         let updatedValues = newMove.update();
 
