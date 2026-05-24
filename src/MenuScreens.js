@@ -14,7 +14,10 @@ export default class MenuScreens {
                 'Yes', 
                 'No'
             ],
-            text: 'Enable Sound?'
+            text: [
+                'Enable Sound?',
+                "Press the 'z' key to confirm"
+            ]
         },
 
         titleScreen: {

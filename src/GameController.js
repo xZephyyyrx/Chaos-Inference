@@ -1,4 +1,10 @@
 export default class GameController {
+
+    static ostNames = Object.freeze({
+        TITLE: 'title',
+        LEVEL: 'level'
+    });
+
     // Currently Loaded Assets //
     #gridmap;
     #titleBg;
@@ -14,8 +20,9 @@ export default class GameController {
     #shaderTime;
     #lastTime;
     #activeKeys = {};
+    #currentOst = null;
     #ostTitle;
-    #currentlyPlayingMusic = false;
+    #ostLevel;
 
     constructor(game, view, dataloader) {
         // Game Logic //
@@ -68,7 +75,7 @@ export default class GameController {
         }
 
         try {
-            this.#playerSprite = await this.#dataloader.importPlayerSprites('basicchar');
+            this.#playerSprite = await this.#dataloader.importPlayerSprites('basiccharbright');
         } catch (error) {
             console.log(error);
         }
@@ -86,7 +93,13 @@ export default class GameController {
         }
 
         try {
-            this.#ostTitle = await this.#dataloader.importMusic('darkclouds8bitwave');
+            this.#ostTitle = await this.#dataloader.importMusic('darkclouds');
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            this.#ostLevel = await this.#dataloader.importMusic('threat');
         } catch (error) {
             console.log(error);
         }
@@ -134,10 +147,7 @@ export default class GameController {
 
         this.#game.update(deltaTime, this.#activeKeys);
 
-        if (this.#game.state.enableSound && !this.#currentlyPlayingMusic) {
-            this.#ostTitle.play();
-            this.#currentlyPlayingMusic = true;
-        }
+        this.handleMusic();
 
         // LOOP //
 
@@ -160,5 +170,27 @@ export default class GameController {
             this.#bgTileset,
             this.#shaderTime
         )
+    }
+
+    handleMusic() {
+        if (
+            (this.#game.state.enableSound && 
+            this.#currentOst !== GameController.ostNames.TITLE && 
+            !this.#game.state.inLevel)
+        ) {
+            this.#ostTitle.play();
+            this.#currentOst = GameController.ostNames.TITLE;
+            this.#ostLevel.pause();
+            this.#ostLevel.currentTime = 0;
+        } else if (
+            this.#game.state.enableSound && 
+            this.#currentOst !== GameController.ostNames.LEVEL &&
+            this.#game.state.inLevel
+        ) {
+            this.#ostLevel.play();
+            this.#currentOst = GameController.ostNames.LEVEL;
+            this.#ostTitle.pause();
+            this.#ostTitle.currentTime = 0;
+        }
     }
 }

@@ -189,7 +189,7 @@ export default class View {
         const textYOffset = 1.09;
         const titleXOffset = 1.1;
         const titleYOffset = 1.1;
-        const newLineYOffset = this.fgCanvas.height / 16;
+        let newLineYOffset = this.fgCanvas.height / 16;
         const textSize = canvasWidth / 24;
         const font = View.menuFont;
         let x;
@@ -212,12 +212,18 @@ export default class View {
         }
         
 
-        if (text.length > 1 && Array.isArray(text)) {
-            Object.values(text).forEach((line, index) => {
-                ctx.fillText(line, x, y + (index * newLineYOffset));
-            });
+        if (type !== View.soundMenuType) {
+            if (text.length > 1 && Array.isArray(text)) {
+                Object.values(text).forEach((line, index) => {
+                    ctx.fillText(line, x, y + (index * newLineYOffset));
+                });
+            } else {
+                ctx.fillText(text, x, y);
+            }
         } else {
-            ctx.fillText(text, x, y);
+            const xOffset = canvasWidth / 6.7;
+            ctx.fillText(text[0], x, y + (newLineYOffset));
+            ctx.fillText(text[1], x - xOffset, canvasHeight - (newLineYOffset / 2));
         }
     }
 
