@@ -1,5 +1,5 @@
 export default class DataLoader {
-    #filepathPrefix = 'Chaos-Inference/data/';
+    #filepathPrefix = 'data/';
 
     #shaderFilepath = 'shaders/';
 
@@ -179,7 +179,7 @@ export default class DataLoader {
         await new Promise((resolve, reject) => {
             image.onload = resolve;
             image.onerror = () => 
-                reject(new Error(`Failed to load ${filename}${this.#imageFiletype}!`));
+                reject(new Error(`Failed to load ${this.#filepathPrefix}${filepath}${filename}${this.#imageFiletype}!`));
         });
 
         return image;
