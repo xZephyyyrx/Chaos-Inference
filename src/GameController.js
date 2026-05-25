@@ -21,8 +21,6 @@ export default class GameController {
     #currentOst = null;
     #titleOst;
 
-    #runningLoop = true;
-
     #currentLevelNum = 0;
     #lastLevelNum;
     #currentFgTileset;
@@ -163,13 +161,10 @@ export default class GameController {
 
     async changeLevel() {
         await this.loadLevel(this.#currentLevelNum);
-        this.#runningLoop = true;
-        this.runGame();
     }
 
     // Main game loop
     runGame(time = performance.now()) {
-        if (!this.#runningLoop) return;
 
         let frameTime = (time - this.#lastTime) / 1000;
 
@@ -200,7 +195,6 @@ export default class GameController {
     checkLevelChange() {
         this.#currentLevelNum = this.#game.currentLevelNum;
         if (this.#lastLevelNum !== this.#currentLevelNum) {
-            this.#runningLoop = false;
             this.#lastLevelOst = this.#currentLevelOst;
             this.changeLevel();
         }
