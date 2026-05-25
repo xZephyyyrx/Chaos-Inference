@@ -89,7 +89,7 @@ export default class GameController {
 
     async loadGameData() {
 
-        const titleBgFilename = 'titleBg';
+        const titleBgFilename = 'titlebg';
         const titleOstFilename = 'darkclouds';
         const playerSpriteFilename = 'basiccharbright';
         const tilemapFilename = 'defaultTilemap';
