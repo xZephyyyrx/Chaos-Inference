@@ -1,5 +1,8 @@
 export default class GameController {
 
+    #accumulator = 0;
+    #fixedDelta = 1 / 60;
+
     // Currently Loaded Assets //
     #masterLevelList;
     #allLevelNames = [];
@@ -168,12 +171,22 @@ export default class GameController {
     runGame(time = performance.now()) {
         if (!this.#runningLoop) return;
 
-        const deltaTime = (time - this.#lastTime) / 1000;
+        let frameTime = (time - this.#lastTime) / 1000;
+
+        frameTime = Math.min(frameTime, 0.25);
+
         this.#lastTime = time;
 
-        this.checkInLevel(deltaTime);
+        this.#accumulator += frameTime;
 
-        this.handleInput(deltaTime);
+        this.checkInLevel(frameTime);
+        
+        while (this.#accumulator >= this.#fixedDelta) {
+
+            this.handleInput(this.#fixedDelta);
+
+            this.#accumulator -= this.#fixedDelta;
+        }
 
         this.handleMusic();
 

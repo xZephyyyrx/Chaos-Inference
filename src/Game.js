@@ -139,6 +139,9 @@ export default class Game {
                 this.#state.inLevel = false;
             }
 
+            keys['z'] = false;
+            keys['Z'] = false;
+
             this.#zRelease = false;
             Move.zKeyRelease = false;
         }
@@ -334,7 +337,7 @@ export default class Game {
             this.#arrowRightRelease = true;
         }
 
-        if (!keys['z'] && !keys['Z']) {
+        if (!keys['z'] && !keys['Z'] && currentScreen) {
             this.#zRelease = true;
         }
 

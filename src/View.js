@@ -176,6 +176,7 @@ export default class View {
     }
 
     renderPauseScreen(screenData, selectedOption, time) {
+
         View.menuBgTimeOffset += time;
         this.renderPauseScreenOverlay();
         this.renderScreenText(screenData.text, screenData.type);
