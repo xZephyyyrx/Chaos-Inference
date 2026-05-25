@@ -1,5 +1,5 @@
 export default class DataLoader {
-    #filepathPrefix = 'data/';
+    #filepathPrefix = 'Chaos-Inference/data/';
 
     #shaderFilepath = 'shaders/';
 
