@@ -7,6 +7,7 @@ export default class View {
     static storyMenuType = 'story';
     static soundMenuType = 'sound';
     static pauseMenuType = 'pause';
+    static levelMenuType = 'level';
 
     static menuBgTimeOffset = 0;
 
@@ -83,12 +84,40 @@ export default class View {
         }
     }
 
-    renderScreen(screenData, selectedOption, time, bgTileset) {
+    renderScreen(
+        screenData, 
+        selectedOption, 
+        time, 
+        bgTileset,
+        levelBgTileset,
+        grid,
+        fgTileset, 
+        fgTilemap, 
+        hazardSprites, 
+        tokenSprites,
+        shaderTime
+    ) {
         View.menuBgTimeOffset += time;
         this.fgCtx.resetTransform();
         this.clearShaders();
         this.clearFg();
-        this.renderScreenBackground(bgTileset);
+        this.clearBg();
+        if (screenData.type !== View.levelMenuType) {
+            this.renderScreenBackground(bgTileset);
+        } else {
+            const previousTileDisplaySize = this.#fgTileDisplaySize;
+            this.#fgTileDisplaySize /= 2;
+            this.renderLevelDemo(
+                grid, 
+                fgTileset, 
+                fgTilemap, 
+                hazardSprites, 
+                tokenSprites,
+                levelBgTileset,
+                shaderTime
+            );
+            this.#fgTileDisplaySize = previousTileDisplaySize;
+        }
         this.renderScreenRect(screenData.type);
         this.renderScreenLayout(screenData.type);
         this.renderScreenText(screenData.text, screenData.type);
@@ -98,6 +127,52 @@ export default class View {
             selectedOption,
             screenData.name
         );
+    }
+
+    renderLevelDemo(
+        grid, 
+        fgTileset, 
+        fgTilemap, 
+        hazardSprites, 
+        tokenSprites,
+        bgTileset,
+        shaderTime
+    ) {
+
+        this.setDemoCamera(grid);
+
+        this.fgCtx.save();
+        this.fgCtx.translate(
+            Math.floor(-View.camera.x),
+            Math.floor(-View.camera.y)
+        );
+
+        this.renderLevel(
+            grid, 
+            fgTileset, 
+            fgTilemap, 
+            hazardSprites, 
+            tokenSprites
+        );
+
+        this.fgCtx.restore();
+
+        this.renderBgTiles(bgTileset);
+
+        this.updateShader(
+            (performance.now() - shaderTime) * 0.001, 
+            0,
+            0
+        );
+    }
+
+    setDemoCamera(grid) {
+        const levelWidth = grid[0].length * this.#fgTileDisplaySize;
+        const levelHeight = grid.length * this.#fgTileDisplaySize;
+        const xOffset = 1.12;
+
+        View.camera.x = levelWidth - (this.fgCanvas.width) * xOffset;
+        View.camera.y = levelHeight - (this.fgCanvas.height);
     }
 
     renderPauseScreen(screenData, selectedOption, time) {
@@ -154,7 +229,8 @@ export default class View {
         ctx.fillRect(0, 0, optionsWidth, canvasHeight);
 
         if (type !== View.mainMenuType &&
-            type !== View.soundMenuType
+            type !== View.soundMenuType &&
+            type !== View.levelMenuType
         ) {
             ctx.fillRect(optionsWidth, dialogueHeight, canvasWidth, canvasHeight)
         } else if (type === View.soundMenuType) {
@@ -168,7 +244,10 @@ export default class View {
         const optionsWidth = canvasWidth / View.optionsWidth;
         const dialogueHeight = canvasHeight / View.dialogueHeight * 2;
 
-        if (type === View.mainMenuType) {
+        if (
+            type === View.mainMenuType ||
+            type === View.levelMenuType
+        ) {
 
             // Options Panel
             this.drawLayoutLine(
@@ -179,7 +258,7 @@ export default class View {
             )
 
         } else if (type === View.tutorialMenuType ||
-                   type === View.storyMenuType
+                   type === View.storyMenuType 
         ) {
             
             // Options Panel
@@ -655,6 +734,10 @@ export default class View {
 
     clearFg() {
         this.fgCtx.clearRect(0, 0, this.fgCanvas.width, this.fgCanvas.height);
+    }
+
+    clearBg() {
+        this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
     }
 
     clearShaders() {

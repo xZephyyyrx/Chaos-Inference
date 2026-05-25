@@ -1,5 +1,12 @@
-// DATA LOADING
+// MOVE
 
--- Ensure imported map data contains no leading or trailing blank spaces/lines
+Ensure unpausing doesnt count as a jump input
 
--- Add error handling for failed image loading
+// GAMECONTROLLER
+
+Allow new levels and assets to be loading while game is running
+
+// GAME
+
+Allow players to change level dynamically
+Add a level select screen

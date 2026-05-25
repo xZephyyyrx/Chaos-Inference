@@ -19,6 +19,10 @@ export default class Menu {
         return this.#type;
     }
 
+    set options(newOptions) {
+        this.#options = newOptions;
+    }
+
     get options() {
         return this.#options;
     }

@@ -1,0 +1,9 @@
+{
+    "levelName": "Pillars",
+    "gridmap": "pillars",
+    "fgTileset": "scaffold",
+    "bgTileset": "pipes",
+    "hazardSprites": "defaultHazard",
+    "tokenSprites": "defaultToken",
+    "ost": "threat"
+}

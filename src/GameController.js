@@ -1,18 +1,13 @@
 export default class GameController {
 
-    static ostNames = Object.freeze({
-        TITLE: 'title',
-        LEVEL: 'level'
-    });
-
     // Currently Loaded Assets //
+    #masterLevelList;
+    #allLevelNames = [];
+
     #gridmap;
     #titleBg;
-    #bgTileset;
-    #fgTileset;
-    #fgTilesetMap;
-    #hazardSprites;
-    #tokenSprites;
+    #tilemap;
+
     #playerSprite;
     #game;
     #view;
@@ -21,8 +16,18 @@ export default class GameController {
     #lastTime;
     #activeKeys = {};
     #currentOst = null;
-    #ostTitle;
-    #ostLevel;
+    #titleOst;
+
+    #runningLoop = true;
+
+    #currentLevelNum = 0;
+    #lastLevelNum;
+    #currentFgTileset;
+    #currentBgTileset;
+    #currentHazardSprites;
+    #currentTokenSprites;
+    #currentLevelOst;
+    #lastLevelOst;
 
     constructor(game, view, dataloader) {
         // Game Logic //
@@ -51,87 +56,144 @@ export default class GameController {
         });
     }
 
-    // TEST DATA FOR LOADING & RENDERING MAPS //
-    async loadTestData() {
-        this.#gridmap = await this.#dataloader.importGridmap('level1grid');
-        this.#gridmap = this.#dataloader.parseMapData(this.#gridmap);
+    async loadLevelData(
+        fgTilesetFilename = 'scaffold',
+        bgTilesetFilename = 'pipes',
+        hazardSpritesFilename = 'defaultHazard',
+        tokenSpritesFilename = 'defaultToken',
+        levelOstFilename = 'threat'
+    ) {
 
-        try {
-            this.#titleBg = await this.#dataloader.importTileset('titlebg');
-        } catch (error) {
-            console.log(error);
-        }
+        let levelData = await this.#dataloader.loadLevelData(
+            fgTilesetFilename,
+            bgTilesetFilename,
+            hazardSpritesFilename,
+            tokenSpritesFilename,
+            levelOstFilename
+        )
 
-        try {
-            this.#fgTileset = await this.#dataloader.importTileset('appearancetestscaffold');
-        } catch (error) {
-            console.log(error);
-        }
+        this.#currentFgTileset = levelData.fgTileset;
+        this.#currentBgTileset = levelData.bgTileset;
+        this.#currentHazardSprites = levelData.hazardSprites;
+        this.#currentTokenSprites = levelData.tokenSprites;
+        this.#currentLevelOst = levelData.levelOst;
+    }
 
-        try {
-            this.#bgTileset = await this.#dataloader.importTileset('bgappearancetest');
-        } catch (error) {
-            console.log(error);
-        }
+    async loadLevelGridmap(levelName = 'defaultLevel') {
+        let levelDetails = await this.#dataloader.getLevelDetails(levelName);
+        return await this.#dataloader.loadLevelGridmap(levelDetails.gridmap);
+    }
 
-        try {
-            this.#playerSprite = await this.#dataloader.importPlayerSprites('basiccharbright');
-        } catch (error) {
-            console.log(error);
-        }
+    async loadGameData() {
 
-        try {
-            this.#hazardSprites = await this.#dataloader.importObjectSprites('hazardbright');
-        } catch (error) {
-            console.log(error);
-        }
+        const titleBgFilename = 'titleBg';
+        const titleOstFilename = 'darkclouds';
+        const playerSpriteFilename = 'basiccharbright';
+        const tilemapFilename = 'defaultTilemap';
 
-        try {
-            this.#tokenSprites = await this.#dataloader.importObjectSprites('tokenbright');
-        } catch (error) {
-            console.log(error);
-        }
+        let gameData;
 
-        try {
-            this.#ostTitle = await this.#dataloader.importMusic('darkclouds');
-        } catch (error) {
-            console.log(error);
-        }
+        gameData = await this.#dataloader.loadGameData(
+            titleBgFilename,
+            titleOstFilename,
+            playerSpriteFilename,
+            tilemapFilename
+        );
 
-        try {
-            this.#ostLevel = await this.#dataloader.importMusic('threat');
-        } catch (error) {
-            console.log(error);
-        }
-        
-        this.#fgTilesetMap = await this.#dataloader.importTilesetMap('level1fgtilemap');
+        this.#titleBg = gameData.titleBg;
+        this.#titleOst = gameData.titleOst;
+        this.#playerSprite = gameData.playerSprite;
+        this.#tilemap = gameData.tilemap;
     }
 
     // Loads initial data and passes it to the Game
     async setup() {
-        await this.loadTestData();
+        await this.loadGameData();
+
+        this.#masterLevelList = await this.#dataloader.importMasterLevelList();
+        await this.importAllLevels();
+        await this.loadLevelData();
+        await this.loadLevel(this.#currentLevelNum);
+
+        this.#lastLevelOst = this.#currentLevelOst;
 
         this.#game.initializeMenu();
 
-        this.initializeLevel();
-    }
-
-    initializeLevel() {
-        this.#game.importLevel(this.#gridmap);
-        try {
-            this.#game.loadLevel(0);
-        } catch (e) {
-            throw (e);
-        }
+        this.#game.populateLevelSelect(this.#allLevelNames);
 
         this.runGame(0);
     }
 
+    async importAllLevels() {
+        const levels = this.#masterLevelList.levels;
+        let currentGridmap;
+        let currentLevelFilename;
+
+        for (let i = 0; i < levels.length; i++) {
+            await this.importLevel(levels[i]);
+        }
+    }
+
+    async importLevel(levelFilename) {
+        const gridmap = await this.loadLevelGridmap(levelFilename);
+        const levelDetails = await this.#dataloader.getLevelDetails(levelFilename);
+
+        this.#allLevelNames.push(levelDetails.levelName);
+        this.#game.importLevel(gridmap);
+    }
+
+    async loadLevel(levelNum = 0) {
+        const level = this.#masterLevelList.levels[levelNum];
+        const levelDetails = await this.#dataloader.getLevelDetails(level);
+        const levelData = await this.loadLevelData(
+            levelDetails.fgTileset,
+            levelDetails.bgTileset,
+            levelDetails.hazardSprites,
+            levelDetails.tokenSprites,
+            levelDetails.ost
+        );
+
+        this.#lastLevelNum = levelNum;
+
+        this.#game.loadLevel(levelNum);
+    }
+
+    async changeLevel() {
+        await this.loadLevel(this.#currentLevelNum);
+        this.#runningLoop = true;
+        this.runGame();
+    }
+
     // Main game loop
     runGame(time = performance.now()) {
+        if (!this.#runningLoop) return;
+
         const deltaTime = (time - this.#lastTime) / 1000;
         this.#lastTime = time;
 
+        this.checkInLevel(deltaTime);
+
+        this.handleInput(deltaTime);
+
+        this.handleMusic();
+
+        this.checkLevelChange();
+
+        // LOOP //
+
+        requestAnimationFrame((t) => this.runGame(t));
+    }
+
+    checkLevelChange() {
+        this.#currentLevelNum = this.#game.currentLevelNum;
+        if (this.#lastLevelNum !== this.#currentLevelNum) {
+            this.#runningLoop = false;
+            this.#lastLevelOst = this.#currentLevelOst;
+            this.changeLevel();
+        }
+    }
+
+    checkInLevel(deltaTime) {
         if (this.#game.state.inLevel) {
             this.callLevelRender();
         } else {
@@ -139,16 +201,22 @@ export default class GameController {
                 this.#game.getScreenDetails(), 
                 this.#game.currentMenuSelection,
                 deltaTime,
-                this.#titleBg
+                this.#titleBg,
+                this.#currentBgTileset,
+                this.#game.getCurrentLevelTiles(),
+                this.#currentFgTileset, 
+                this.#tilemap,
+                this.#currentHazardSprites,
+                this.#currentTokenSprites,
+                deltaTime
             );
         }
+    }
 
-        // Read player inputs
-
+    handleInput(deltaTime) {
         if (!this.#game.state.paused) {
             this.#game.update(deltaTime, this.#activeKeys);
         } else {
-            this.callLevelRender();
             this.#view.renderPauseScreen(
                 this.#game.getScreenDetails(),
                 this.#game.currentMenuSelection,
@@ -156,51 +224,48 @@ export default class GameController {
             );
             this.#game.runPauseScreen(this.#activeKeys);
         }
-
-        this.handleMusic();
-
-        // LOOP //
-
-        requestAnimationFrame((t) => this.runGame(t));
     }
 
     callLevelRender() {
         // UPDATE VIEW //
-        this.#view.clearFg();
         this.#view.renderAll(
             this.#game.getCurrentLevelTiles(),
-            this.#fgTileset, 
-            this.#fgTilesetMap,
-            this.#hazardSprites,
-            this.#tokenSprites,
+            this.#currentFgTileset, 
+            this.#tilemap,
+            this.#currentHazardSprites,
+            this.#currentTokenSprites,
             this.#playerSprite, 
             this.#game.getPlayerPosition(), 
             this.#game.getPlayerDimensions(),
             this.#game.getPlayerDirection(),
-            this.#bgTileset,
+            this.#currentBgTileset,
             this.#shaderTime
         )
     }
 
     handleMusic() {
-        if (
-            (this.#game.state.enableSound && 
-            this.#currentOst !== GameController.ostNames.TITLE && 
-            !this.#game.state.inLevel)
-        ) {
-            this.#ostTitle.play();
-            this.#currentOst = GameController.ostNames.TITLE;
-            this.#ostLevel.pause();
-            this.#ostLevel.currentTime = 0;
-        } else if (
-            this.#game.state.enableSound && 
-            this.#currentOst !== GameController.ostNames.LEVEL &&
-            this.#game.state.inLevel
-        ) {
-            this.#ostLevel.play();
-            this.#currentOst = GameController.ostNames.LEVEL;
-            this.#ostTitle.pause();
-            this.#ostTitle.currentTime = 0;
+        if (this.#game.state.enableSound) {
+            if (!this.#game.state.inLevel) {
+                if (this.#currentOst !== this.#titleOst) {
+
+                    if (this.#currentOst) {
+                        this.#currentOst.pause();
+                        this.#currentOst.currentTime = 0;
+                    }
+                    this.#currentOst = this.#titleOst;
+                    this.#currentOst.play();
+                }
+            } else {
+                if (this.#currentOst !== this.#currentLevelOst) {
+
+                    if (this.#currentOst) {
+                        this.#currentOst.pause();
+                        this.#currentOst.currentTime = 0;
+                    }
+                    this.#currentOst = this.#currentLevelOst;
+                    this.#currentOst.play();
+                }
+            }
         }
     }
 }

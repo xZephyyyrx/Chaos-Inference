@@ -1,0 +1,9 @@
+{
+    "levelName": "Junkyard",
+    "gridmap": "level1grid",
+    "fgTileset": "scaffold",
+    "bgTileset": "pipes",
+    "hazardSprites": "defaultHazard",
+    "tokenSprites": "defaultToken",
+    "ost": "threat"
+}

@@ -133,7 +133,12 @@ export default class Move {
             Move.activeCoyoteFrames -= 1;
         }
         
-        if (Move.previousDownCollision && !currentCollision && !this.keys['z']) {
+        if (
+            Move.previousDownCollision && 
+            !currentCollision && 
+            !this.keys['z'] && 
+            !this.keys['Z']
+        ) {
             Move.activeCoyoteFrames = Move.totalCoyoteFrames;
         }
 
@@ -157,7 +162,7 @@ export default class Move {
                 this.player.direction = Move.playerDirection.RIGHT;
             }
 
-            if (this.keys['z'] && Move.zKeyRelease) {
+            if (this.keys['z'] || this.keys['Z'] && Move.zKeyRelease) {
 
                 ///////////////
                 // WALLJUMPS //
@@ -206,15 +211,15 @@ export default class Move {
                 this.checkBufferJump();
             }
 
-            if (!this.keys['z']) {
+            if (!this.keys['z'] && !this.keys['Z']) {
                 Move.zKeyRelease = true;
             }
 
-            if (!this.keys['z'] && this.collisions.down) {
+            if (!this.keys['z'] && !this.keys['Z'] && this.collisions.down) {
                 Move.hasJumped = false;
             }
 
-            if ((!this.keys['z'] && this.velY < 0) ||
+            if ((!this.keys['z'] && !this.keys['Z'] && this.velY < 0) ||
                 this.collisions.up && this.velY < 0) {
                 this.velY *= 0.5;
             }

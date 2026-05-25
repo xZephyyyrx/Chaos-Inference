@@ -1,0 +1,9 @@
+{
+    "levelName": "Tech City",
+    "gridmap": "thegauntlet1",
+    "fgTileset": "appearancetestbright",
+    "bgTileset": "pipes",
+    "hazardSprites": "defaultHazard",
+    "tokenSprites": "defaultToken",
+    "ost": "threat"
+}

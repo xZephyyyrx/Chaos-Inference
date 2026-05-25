@@ -5,7 +5,8 @@ export default class MenuScreens {
         SOUND: 'sound',
         TUTORIAL: 'tutorial',
         STORY: 'story',
-        PAUSE: 'pause'
+        PAUSE: 'pause',
+        LEVEL: 'level'
     });
 
     static allScreens = {
@@ -25,10 +26,22 @@ export default class MenuScreens {
             type: MenuScreens.menuTypes.MAIN,
             options: [
                 'Start Game',
+                'Level Select',
                 'View Tutorial',
                 'View Story'
             ],
             text: 'Chaos Inference'
+        },
+
+        levelSelect: {
+            type: MenuScreens.menuTypes.LEVEL,
+            options: [
+                [
+                    'Return to',
+                    'Title Screen'
+                ]
+            ],
+            text: ''
         },
 
         pauseScreen: {

@@ -11,6 +11,7 @@ export default class Game {
         START: 'Start Game',
         TUTORIAL: 'View Tutorial',
         STORY: 'View Story',
+        LEVEL: 'Level Select',
         NEXT: 'Next Page',
         PREVIOUS: 'Previous Page',
         RETURN: ['Return to', 'Title Screen'],
@@ -23,7 +24,8 @@ export default class Game {
         TUTORIAL: 'tutorial',
         STORY: 'story',
         SOUND: 'soundOptions',
-        PAUSE: 'pauseScreen'
+        PAUSE: 'pauseScreen',
+        LEVEL: 'levelSelect'
     });
 
     static screenTypes = Object.freeze({
@@ -31,7 +33,8 @@ export default class Game {
         TUTORIAL: 'tutorial',
         STORY: 'story',
         SOUND: 'sound',
-        PAUSE: 'pause'
+        PAUSE: 'pause',
+        LEVEL: 'level'
     });
 
     static initialMenuScreen = Game.screenNames.SOUND;
@@ -128,7 +131,7 @@ export default class Game {
             this.#arrowRightRelease = false;
         }
 
-        if (keys['z'] && this.#zRelease) {
+        if ((keys['z'] || keys['Z']) && this.#zRelease) {
             this.#state.paused = false;
             this.setCurrentScreen(Game.screenNames.MAIN);
 
@@ -140,7 +143,7 @@ export default class Game {
             Move.zKeyRelease = false;
         }
 
-        if (!keys['z']) {
+        if (!keys['z'] && !keys['Z']) {
             this.#zRelease = true;
         }
 
@@ -179,6 +182,16 @@ export default class Game {
             throw new Error(`Level number ${levelNum} does not exist!`);
         }
     };
+
+    populateLevelSelect(levelNames) {
+        const levelSelect = this.#allMenuScreens.find(screen => screen.type === Game.screenTypes.LEVEL);
+        const returnOption = [
+            'Return to',
+            'Title Screen'
+        ]
+        levelSelect.options = levelNames;
+        levelSelect.options.push(returnOption);
+    }
 
     // PLAYER HANDLING //
     
@@ -266,7 +279,7 @@ export default class Game {
             this.#arrowUpRelease = false;
         }
 
-        if (keys['z'] && this.#zRelease) {
+        if ((keys['z'] || keys['Z']) && this.#zRelease) {
             if (currentScreen.type !== Game.screenTypes.SOUND) {
                 this.handleScreenChange();
             } else {
@@ -321,8 +334,18 @@ export default class Game {
             this.#arrowRightRelease = true;
         }
 
-        if (!keys['z']) {
+        if (!keys['z'] && !keys['Z']) {
             this.#zRelease = true;
+        }
+
+        if (
+            currentScreen.type === Game.screenTypes.LEVEL &&
+            !Array.isArray(selection)
+        ) {
+            const index = currentScreen.options.indexOf(selection);
+            this.#currentLevelNum = index;
+        } else {
+            this.#currentLevelNum = 0;
         }
     }
 
@@ -330,32 +353,47 @@ export default class Game {
         const selection = this.#currentMenuSelection;
         const screen = this.#currentMenuScreen;
 
-        if (selection === Game.options.TUTORIAL) {
-            this.setCurrentScreen(`${Game.screenNames.TUTORIAL}1`);
-        } else if (selection === Game.options.STORY) {
-            this.setCurrentScreen(`${Game.screenNames.STORY}1`);
-        } else if (selection === Game.options.NEXT) {
-            const pageNum = screen.name.slice(-1);
-            this.setCurrentScreen(`` +
-                `${screen.name.slice(0, -1)}` +
-                `${parseInt(pageNum, 10) + 1}`
-            )
-        } else if (selection === Game.options.PREVIOUS) {
-            const pageNum = screen.name.slice(-1);
-            this.setCurrentScreen(`` +
-                `${screen.name.slice(0, -1)}` +
-                `${parseInt(pageNum, 10) - 1}`
-            );
-        } else if (Array.isArray(selection)) {
-            this.setCurrentScreen(`${Game.screenNames.MAIN}`);
-        } else if (selection === Game.options.START) {
-            this.#currentMenuSelection = this.#currentMenuScreen.options[0];
-            this.#state.inLevel = true;
-        } else if (selection === Game.options.PLAYSOUND ||
-                   selection === Game.options.DISABLESOUND
+        if (
+            screen.name !== Game.screenNames.LEVEL ||
+            Array.isArray(selection)
         ) {
-            this.setCurrentScreen(`${Game.screenNames.MAIN}`);
+            if (selection === Game.options.TUTORIAL) {
+                this.setCurrentScreen(`${Game.screenNames.TUTORIAL}1`);
+            } else if (selection === Game.options.STORY) {
+                this.setCurrentScreen(`${Game.screenNames.STORY}1`);
+            } else if (selection === Game.options.NEXT) {
+                const pageNum = screen.name.slice(-1);
+                this.setCurrentScreen(`` +
+                    `${screen.name.slice(0, -1)}` +
+                    `${parseInt(pageNum, 10) + 1}`
+                )
+            } else if (selection === Game.options.PREVIOUS) {
+                const pageNum = screen.name.slice(-1);
+                this.setCurrentScreen(`` +
+                    `${screen.name.slice(0, -1)}` +
+                    `${parseInt(pageNum, 10) - 1}`
+                );
+            } else if (Array.isArray(selection)) {
+                this.setCurrentScreen(`${Game.screenNames.MAIN}`);
+            } else if (selection === Game.options.START) {
+                this.#currentMenuSelection = this.#currentMenuScreen.options[0];
+                this.#currentLevelNum = 0;
+                this.loadLevel(this.#currentLevelNum);
+                this.#state.inLevel = true;
+            } else if (selection === Game.options.PLAYSOUND ||
+                    selection === Game.options.DISABLESOUND
+            ) {
+                this.setCurrentScreen(`${Game.screenNames.MAIN}`);
+            } else if (selection === Game.options.LEVEL) {
+                this.setCurrentScreen(`${Game.screenNames.LEVEL}`);
+            }
+        } else {
+            this.handleLevelSelect(screen, selection);
         }
+    }
+
+    handleLevelSelect(screen, selection) {
+        this.#state.inLevel = true;
     }
 
     // Retriving Player data
@@ -389,5 +427,9 @@ export default class Game {
 
     get currentMenuSelection() {
         return this.#currentMenuSelection;
+    }
+
+    get currentLevelNum() {
+        return this.#currentLevelNum;
     }
 }

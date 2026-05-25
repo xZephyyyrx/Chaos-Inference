@@ -25,11 +25,112 @@ export default class DataLoader {
     #tilemapFilepath = 'tilemaps/';
 
     // Appends the correct filetype to tilemap filenames
-    #tilemapFiletype = '.json';
+    #jsonFiletype = '.json';
 
     #musicFilepath = 'music/';
 
     #musicFiletype = '.ogg';
+
+    async loadGameData(
+        titleBgFilename,
+        titleOstFilename,
+        playerSpriteFilename,
+        tilemapFilename
+    ) {
+
+        let titleBg;
+        let titleOst;
+        let playerSprite;
+        let tilemap;
+
+        // Load Title Screen Background
+        try {
+            titleBg = await this.importTileset(titleBgFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        // Load Title Screen ost
+        try {
+            titleOst = await this.importMusic(titleOstFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        // Load Character Sprite
+        try {
+            playerSprite = await this.importPlayerSprites(playerSpriteFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        // Load Default Tilemap
+        tilemap = await this.importTilesetMap(tilemapFilename);
+
+        return {
+            titleBg: titleBg,
+            titleOst: titleOst,
+            playerSprite: playerSprite,
+            tilemap: tilemap
+        }
+    }
+
+    async loadLevelGridmap(gridmapFilename) {
+        let gridmap = await this.importGridmap(gridmapFilename);
+        return this.parseMapData(gridmap);
+    }
+
+    async loadLevelData(
+        fgTilesetFilename,
+        bgTilesetFilename,
+        hazardSpritesFilename,
+        tokenSpritesFilename,
+        levelOstFilename
+    ) {
+        let fgTileset;
+        let bgTileset;
+        let hazardSprites;
+        let tokenSprites;
+        let levelOst;
+
+        try {
+            fgTileset = await this.importTileset(fgTilesetFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            bgTileset = await this.importTileset(bgTilesetFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            hazardSprites = await this.importObjectSprites(hazardSpritesFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            tokenSprites = await this.importObjectSprites(tokenSpritesFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
+            levelOst = await this.importMusic(levelOstFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        return {
+            fgTileset: fgTileset,
+            bgTileset: bgTileset,
+            hazardSprites: hazardSprites,
+            tokenSprites: tokenSprites,
+            levelOst: levelOst
+        }
+    }
     
     async importGridmap(filename) {
         return await this.importText(this.#gridmapFilepath, filename);
@@ -84,15 +185,32 @@ export default class DataLoader {
         return image;
     }
 
+    async importMasterLevelList() {
+        const filename = 'allLevels';
+        const filepath = 'config/';
+
+        return await this.importJson(filepath, filename);
+    }
+
+    async getLevelDetails(filename) {
+        const filepath = 'config/';
+
+        return await this.importJson(filepath, filename);
+    }
+
     async importTilesetMap(filename) {
+        return await this.importJson(this.#tilemapFilepath, filename);
+    }
+
+    async importJson(filepath, filename) {
         try {
             const response = await fetch(`${this.#filepathPrefix}` +
-                                         `${this.#tilemapFilepath}` +
+                                         `${filepath}` +
                                          `${filename}` +
-                                         `${this.#tilemapFiletype}`);
+                                         `${this.#jsonFiletype}`);
 
             if (!response.ok) {
-                throw new Error(`Failed to load ${filename}${this.#tilemapFiletype}!`)
+                throw new Error(`Failed to load ${filename}${this.#jsonFiletype}!`)
             }
 
             return await response.json();
