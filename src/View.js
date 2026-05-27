@@ -8,6 +8,7 @@ export default class View {
     static soundMenuType = 'sound';
     static pauseMenuType = 'pause';
     static levelMenuType = 'level';
+    static loadingScreenType = 'loading';
 
     static menuBgTimeOffset = 0;
 
@@ -82,6 +83,12 @@ export default class View {
             top: this.fgCanvas.height * 0.4,
             bottom: this.fgCanvas.height * 0.6
         }
+    }
+
+    renderLoadingScreen() {
+        this.bgCtx.fillStyle = 'rgb(0, 0, 0)'
+        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        this.renderScreenText('Loading...', View.loadingScreenType);
     }
 
     renderScreen(
@@ -309,6 +316,10 @@ export default class View {
             ctx.font = `${textSize / 2}px ${font}`;
             x = canvasWidth / 4.3;
             y = canvasHeight / 2.5;
+        } else if (type === View.loadingScreenType) {
+            ctx.font = `${textSize / 2}px ${font}`;
+            x = (canvasWidth / View.optionsWidth) * textXOffset * 1.25;
+            y = canvasHeight - (newLineYOffset / 2);
         } else {
             ctx.font = `${textSize / 2}px ${font}`;
             x = (canvasWidth / View.optionsWidth) * textXOffset;

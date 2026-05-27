@@ -109,6 +109,10 @@ export default class GameController {
 
     // Loads initial data and passes it to the Game
     async setup() {
+        const fontName = '16px "PacMan1980"';
+        
+        await document.fonts.load(fontName);
+        this.#view.renderLoadingScreen();
         await this.loadGameData();
 
         this.#masterLevelList = await this.#dataloader.importMasterLevelList();
