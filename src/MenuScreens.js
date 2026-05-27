@@ -6,7 +6,9 @@ export default class MenuScreens {
         TUTORIAL: 'tutorial',
         STORY: 'story',
         PAUSE: 'pause',
-        LEVEL: 'level'
+        LEVEL: 'level',
+        OPTIONS: 'options',
+        WIN: 'win'
     });
 
     static allScreens = {
@@ -28,7 +30,8 @@ export default class MenuScreens {
                 'Start Game',
                 'Level Select',
                 'View Tutorial',
-                'View Story'
+                'View Story',
+                'Options'
             ],
             text: 'Chaos Inference'
         },
@@ -216,6 +219,30 @@ export default class MenuScreens {
                 'it continue targeting the wrong',
                 'people until the city is no',
                 'more?'
+            ]
+        },
+
+        gameOptions: {
+            type: MenuScreens.menuTypes.OPTIONS,
+            options: [
+                [
+                    'Return to',
+                    'Title Screen'
+                ]
+            ],
+            text: [
+                'Options'
+            ]
+        },
+
+        winScreen: {
+            type: MenuScreens.menuTypes.WIN,
+            options: [
+                'Continue to next Level',
+                'Return to Title Screen'
+            ],
+            text: [
+                'Level Complete!'
             ]
         }
     }

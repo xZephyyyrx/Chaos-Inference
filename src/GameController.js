@@ -27,6 +27,7 @@ export default class GameController {
     #currentBgTileset;
     #currentHazardSprites;
     #currentTokenSprites;
+    #currentGoalSprites;
     #currentLevelOst;
     #lastLevelOst;
 
@@ -62,6 +63,7 @@ export default class GameController {
         bgTilesetFilename = 'pipes',
         hazardSpritesFilename = 'defaultHazard',
         tokenSpritesFilename = 'defaultToken',
+        goalSpritesFilename = 'defaultGoal',
         levelOstFilename = 'threat'
     ) {
 
@@ -70,6 +72,7 @@ export default class GameController {
             bgTilesetFilename,
             hazardSpritesFilename,
             tokenSpritesFilename,
+            goalSpritesFilename,
             levelOstFilename
         )
 
@@ -77,6 +80,7 @@ export default class GameController {
         this.#currentBgTileset = levelData.bgTileset;
         this.#currentHazardSprites = levelData.hazardSprites;
         this.#currentTokenSprites = levelData.tokenSprites;
+        this.#currentGoalSprites = levelData.goalSprites;
         this.#currentLevelOst = levelData.levelOst;
     }
 
@@ -155,6 +159,7 @@ export default class GameController {
             levelDetails.bgTileset,
             levelDetails.hazardSprites,
             levelDetails.tokenSprites,
+            levelDetails.goalSprites,
             levelDetails.ost
         );
 
@@ -168,7 +173,7 @@ export default class GameController {
     }
 
     // Main game loop
-    runGame(time = performance.now()) {
+    async runGame(time = performance.now()) {
 
         let frameTime = (time - this.#lastTime) / 1000;
 
@@ -178,7 +183,9 @@ export default class GameController {
 
         this.#accumulator += frameTime;
 
-        this.checkInLevel(frameTime);
+        await this.checkHasWonLevel(this.#fixedDelta);
+
+        await this.checkInLevel(frameTime);
         
         while (this.#accumulator >= this.#fixedDelta) {
 
@@ -189,22 +196,22 @@ export default class GameController {
 
         this.handleMusic();
 
-        this.checkLevelChange();
+        await this.checkLevelChange();
 
         // LOOP //
 
         requestAnimationFrame((t) => this.runGame(t));
     }
 
-    checkLevelChange() {
+    async checkLevelChange() {
         this.#currentLevelNum = this.#game.currentLevelNum;
         if (this.#lastLevelNum !== this.#currentLevelNum) {
             this.#lastLevelOst = this.#currentLevelOst;
-            this.changeLevel();
+            await this.changeLevel();
         }
     }
 
-    checkInLevel(deltaTime) {
+    async checkInLevel(deltaTime) {
         if (this.#game.state.inLevel) {
             this.callLevelRender();
         } else {
@@ -220,6 +227,23 @@ export default class GameController {
                 this.#currentHazardSprites,
                 this.#currentTokenSprites,
                 deltaTime
+            );
+        }
+    }
+
+    async checkHasWonLevel(deltaTime) {
+        if (this.#game.state.levelComplete) {
+            this.#view.renderScreen(
+                this.#game.getScreenDetails(),
+                this.#game.currentMenuSelection,
+                deltaTime,
+                this.#titleBg,
+                this.#currentBgTileset,
+                this.#game.getCurrentLevelTiles(),
+                this.#currentFgTileset, 
+                this.#tilemap,
+                this.#currentHazardSprites,
+                this.#currentTokenSprites
             );
         }
     }
@@ -245,6 +269,7 @@ export default class GameController {
             this.#tilemap,
             this.#currentHazardSprites,
             this.#currentTokenSprites,
+            this.#currentGoalSprites,
             this.#playerSprite, 
             this.#game.getPlayerPosition(), 
             this.#game.getPlayerDimensions(),

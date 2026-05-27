@@ -15,6 +15,8 @@ export default class Game {
         NEXT: 'Next Page',
         PREVIOUS: 'Previous Page',
         RETURN: ['Return to', 'Title Screen'],
+        WINSCREENRETURN: 'Return to Title Screen',
+        WINSCREENCONTINUE: 'Continue to next Level',
         PLAYSOUND: 'Yes',
         DISABLESOUND: 'No'
     });
@@ -25,7 +27,8 @@ export default class Game {
         STORY: 'story',
         SOUND: 'soundOptions',
         PAUSE: 'pauseScreen',
-        LEVEL: 'levelSelect'
+        LEVEL: 'levelSelect',
+        WIN: 'winScreen'
     });
 
     static screenTypes = Object.freeze({
@@ -34,7 +37,8 @@ export default class Game {
         STORY: 'story',
         SOUND: 'sound',
         PAUSE: 'pause',
-        LEVEL: 'level'
+        LEVEL: 'level',
+        WIN: 'win'
     });
 
     static initialMenuScreen = Game.screenNames.SOUND;
@@ -48,8 +52,9 @@ export default class Game {
     #state = {
         inLevel: false,
         enableSound: false,
-        paused: false
-    }
+        paused: false,
+        levelComplete: false
+    };
     #player;
     #arrowDownRelease = true;
     #arrowUpRelease = true;
@@ -241,6 +246,7 @@ export default class Game {
         this.#player.vel = updatedValues.vel;
         this.#player.collisions = updatedValues.collisions;
         this.#player.aliveState = updatedValues.aliveState;
+        this.#state.levelComplete = updatedValues.winState;
 
         if (this.#player.aliveState === false) {
 
@@ -248,6 +254,9 @@ export default class Game {
             this.#player = null;
 
             this.loadLevel(this.#currentLevelNum);
+        } else if (this.#state.levelComplete) {
+            this.#state.inLevel = false;
+            this.setCurrentScreen(Game.screenNames.WIN);
         }
     }
 
@@ -347,7 +356,9 @@ export default class Game {
         ) {
             const index = currentScreen.options.indexOf(selection);
             this.#currentLevelNum = index;
-        } else {
+        } else if (currentScreen.type === Game.screenTypes.LEVEL &&
+            Array.isArray(selection)
+        ) {
             this.#currentLevelNum = 0;
         }
     }
@@ -376,7 +387,9 @@ export default class Game {
                     `${screen.name.slice(0, -1)}` +
                     `${parseInt(pageNum, 10) - 1}`
                 );
-            } else if (Array.isArray(selection)) {
+            } else if (Array.isArray(selection) ||
+                       selection === Game.options.WINSCREENRETURN) {
+                this.#state.levelComplete = false;
                 this.setCurrentScreen(`${Game.screenNames.MAIN}`);
             } else if (selection === Game.options.START) {
                 this.#currentMenuSelection = this.#currentMenuScreen.options[0];
@@ -389,6 +402,12 @@ export default class Game {
                 this.setCurrentScreen(`${Game.screenNames.MAIN}`);
             } else if (selection === Game.options.LEVEL) {
                 this.setCurrentScreen(`${Game.screenNames.LEVEL}`);
+            } else if (selection === Game.options.WINSCREENCONTINUE) {
+                if (this.#allLevels.length > this.#currentLevelNum + 1) {
+                    this.#currentLevelNum += 1;
+                    this.#state.levelComplete = false;
+                    this.#state.inLevel = true;
+                }
             }
         } else {
             this.handleLevelSelect(screen, selection);

@@ -85,6 +85,7 @@ export default class Move {
     update() {
 
         let aliveState = true;
+        let winState = false;
 
         this.handleInput();
 
@@ -105,7 +106,8 @@ export default class Move {
         } catch {
             this.outOfBounds = true;
         }
-        
+
+        winState = (this.collidesWithGoal(this.posX, this.posY));
 
         if (this.outOfBounds) {
             aliveState = false;
@@ -115,7 +117,8 @@ export default class Move {
             pos: new Vector(this.posX, this.posY),
             vel: new Vector(this.velX, this.velY),
             collisions: this.collisions,
-            aliveState: aliveState
+            aliveState: aliveState,
+            winState: winState
         }
     }
 
@@ -438,6 +441,31 @@ export default class Move {
                 this.level.isTokenAt(right, mid) ||
                 this.level.isTokenAt(left, bottom) ||
                 this.level.isTokenAt(right, bottom)
+            );
+        } catch (e) {
+            throw (e);
+        }
+    }
+
+    collidesWithGoal(x, y) {
+        const inset = 0.001;
+        const xOffset = 0.1;
+        const yOffset = 0.05;
+
+        const left = x + inset + xOffset;
+        const right = x + this.player.width - inset - xOffset;
+        const top = y + inset + yOffset;
+        const bottom = y + this.player.height - inset;
+        const mid = y + (this.player.height / 2);
+
+        try {
+            return (
+                this.level.isGoalAt(left, top) ||
+                this.level.isGoalAt(right, top) ||
+                this.level.isGoalAt(left, mid) ||
+                this.level.isGoalAt(right, mid) ||
+                this.level.isGoalAt(left, bottom) ||
+                this.level.isGoalAt(right, bottom)
             );
         } catch (e) {
             throw (e);

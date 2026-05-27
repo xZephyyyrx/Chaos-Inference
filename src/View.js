@@ -9,6 +9,7 @@ export default class View {
     static pauseMenuType = 'pause';
     static levelMenuType = 'level';
     static loadingScreenType = 'loading';
+    static winMenuType = 'win';
 
     static menuBgTimeOffset = 0;
 
@@ -45,6 +46,8 @@ export default class View {
     static hazardIdentifier = 'Hazard';
 
     static tokenIdentifier = 'Token';
+
+    static goalIdentifier = 'Goal';
 
     static camera = {
         x: 0,
@@ -101,17 +104,16 @@ export default class View {
         fgTileset, 
         fgTilemap, 
         hazardSprites, 
-        tokenSprites,
-        shaderTime
+        tokenSprites
     ) {
         View.menuBgTimeOffset += time;
         this.fgCtx.resetTransform();
         this.clearShaders();
         this.clearFg();
         this.clearBg();
-        if (screenData.type !== View.levelMenuType) {
-            this.renderScreenBackground(bgTileset);
-        } else {
+        this.renderScreenBackground(bgTileset);
+        if (screenData.type === View.levelMenuType && 
+            !Array.isArray(selectedOption)) {
             const previousTileDisplaySize = this.#fgTileDisplaySize;
             this.#fgTileDisplaySize /= 2;
             this.renderLevelDemo(
@@ -121,7 +123,7 @@ export default class View {
                 hazardSprites, 
                 tokenSprites,
                 levelBgTileset,
-                shaderTime
+                time
             );
             this.#fgTileDisplaySize = previousTileDisplaySize;
         }
@@ -238,10 +240,13 @@ export default class View {
 
         if (type !== View.mainMenuType &&
             type !== View.soundMenuType &&
-            type !== View.levelMenuType
+            type !== View.levelMenuType &&
+            type !== View.winMenuType
         ) {
             ctx.fillRect(optionsWidth, dialogueHeight, canvasWidth, canvasHeight)
-        } else if (type === View.soundMenuType) {
+        } else if (type === View.soundMenuType ||
+                   type === View.winMenuType
+        ) {
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
     }
@@ -308,7 +313,9 @@ export default class View {
             ctx.font = `${textSize}px ${font}`;
             x = (canvasWidth / View.optionsWidth) * titleXOffset;
             y = (canvasHeight / (View.dialogueHeight * 3)) * titleYOffset;
-        } else if (type === View.soundMenuType) {
+        } else if (type === View.soundMenuType ||
+                   type === View.winMenuType
+        ) {
             ctx.font = `${textSize / 2}px ${font}`;
             x = canvasWidth / 3;
             y = canvasHeight / 2.5;
@@ -360,6 +367,9 @@ export default class View {
             type === View.pauseMenuType
         ) {
             x = canvasWidth / 2.75;
+            y  = canvasHeight / 20 * 11;
+        } else if (type === View.winMenuType) {
+            x = canvasWidth / 3.75;
             y  = canvasHeight / 20 * 11;
         }
 
@@ -428,6 +438,12 @@ export default class View {
             yStart = y;
             yStep = y - (canvasHeight / 32);
             yEnd = y - (canvasHeight / 64);
+        } else if (type === View.winMenuType) {
+            xStart = x - (canvasWidth / 96);
+            xStep = xStart + canvasWidth / 96;
+            yStart = y + (offSet * index);
+            yStep = y - (canvasHeight / 32) + (offSet * index);
+            yEnd = y - (canvasHeight / 64) + (offSet * index);
         }
 
         ctx.save();
@@ -476,6 +492,7 @@ export default class View {
         fgTilemap, 
         hazardSprites, 
         tokenSprites,
+        goalSprites,
         playerSprite,
         playerPos,
         playerDimensions,
@@ -501,7 +518,8 @@ export default class View {
             fgTileset, 
             fgTilemap, 
             hazardSprites, 
-            tokenSprites
+            tokenSprites,
+            goalSprites
         );
 
         this.renderPlayer(
@@ -564,9 +582,9 @@ export default class View {
         );
     }
 
-    renderLevel(grid, tileset, tilemap, hazardSprites, tokenSprites) {
+    renderLevel(grid, tileset, tilemap, hazardSprites, tokenSprites, goalSprites) {
         this.renderLevelTiles(grid, tileset, tilemap);
-        this.renderLevelObjects(grid, hazardSprites, tokenSprites);
+        this.renderLevelObjects(grid, hazardSprites, tokenSprites, goalSprites);
     }
 
     renderPlayer(sprite, pos, dimensions, direction) {
@@ -639,7 +657,7 @@ export default class View {
         }
     }
 
-    renderLevelObjects(grid, hazardSprites, tokenSprites) {
+    renderLevelObjects(grid, hazardSprites, tokenSprites, goalSprites) {
         for (let y = 0; y < grid.length; y++) {
             for (let x = 0; x < grid[y].length; x++) {
 
@@ -655,6 +673,8 @@ export default class View {
                     grid[y][x].activeState
                 ) {
                     image = tokenSprites;
+                } else if (grid[y][x].type === View.goalIdentifier) {
+                    image = goalSprites;
                 }
 
                 if (image) {
@@ -669,25 +689,6 @@ export default class View {
                     )
                 }
                 
-            }
-        }
-    }
-
-    renderLevelTokens(grid, tokenSprites) {
-        for (let y = 0; y < grid.length; y++) {
-            for (let x = 0; x < grid[y].length; x++) {
-
-                if (grid[y][x] === null || grid[y][x].type !== 'Token') {continue;}
-
-                this.fgCtx.drawImage(
-                    tokenSprites,
-
-                    grid[y][x].pos.x * this.#fgTileDisplaySize,
-                    grid[y][x].pos.y * this.#fgTileDisplaySize,
-
-                    this.#fgTileDisplaySize,
-                    this.#fgTileDisplaySize
-                )
             }
         }
     }

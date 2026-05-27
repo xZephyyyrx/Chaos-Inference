@@ -3,6 +3,7 @@ import Tile from "./Tile.js";
 import Hazard from "./Hazard.js";
 import Vector from "./Vector.js";
 import Token from "./Token.js";
+import Goal from "./Goal.js";
 
 export default class ObjectParser {
 
@@ -82,6 +83,10 @@ export default class ObjectParser {
 
     static parseToken(pos, char) {
         return new Token(pos, char);
+    }
+
+    static parseGoal(pos) {
+        return new Goal(pos);
     }
 
     static parsePlayerLocation(gridmap) {

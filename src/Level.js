@@ -2,6 +2,9 @@ import Vector from "./Vector.js";
 import ObjectParser from "./ObjectParser.js";
 
 export default class Level {
+
+    static goalChar = '$';
+
     #levelTiles = [];
     #player;
     
@@ -27,7 +30,6 @@ export default class Level {
         for (let y = 0; y < this.#levelTiles.length; y++) {
             for (let x = 0; x < this.#levelTiles[y].length; x++) {
                 if (ObjectParser.isLetter(gridmap[y][x])) {
-
                     if (ObjectParser.isLetterLowercase(gridmap[y][x])) {
                         let hazard = ObjectParser.parseHazard(new Vector(x, y), gridmap[y][x]);
                         this.#levelTiles[y][x] = hazard;
@@ -35,6 +37,9 @@ export default class Level {
                         let token = ObjectParser.parseToken(new Vector(x, y), gridmap[y][x]);
                         this.#levelTiles[y][x] = token;
                     }
+                } else if (gridmap[y][x] === Level.goalChar) {
+                    let goal = ObjectParser.parseGoal(new Vector(x, y));
+                    this.#levelTiles[y][x] = goal;
                 }
             }
         }
@@ -104,6 +109,23 @@ export default class Level {
         }
 
         if (tile && tile.type === 'Hazard' && tile.activeState === true) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    isGoalAt(x, y) {
+        let tile 
+        let result = false;
+
+        try {
+            tile = this.getTileAt(x, y);
+        } catch (e) {
+            throw (e);
+        }
+
+        if (tile && tile.type === 'Goal') {
             result = true;
         }
 

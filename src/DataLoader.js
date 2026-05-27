@@ -85,12 +85,14 @@ export default class DataLoader {
         bgTilesetFilename,
         hazardSpritesFilename,
         tokenSpritesFilename,
+        goalSpritesFilename,
         levelOstFilename
     ) {
         let fgTileset;
         let bgTileset;
         let hazardSprites;
         let tokenSprites;
+        let goalSprites;
         let levelOst;
 
         try {
@@ -118,6 +120,12 @@ export default class DataLoader {
         }
 
         try {
+            goalSprites = await this.importObjectSprites(goalSpritesFilename);
+        } catch (error) {
+            console.log(error);
+        }
+
+        try {
             levelOst = await this.importMusic(levelOstFilename);
         } catch (error) {
             console.log(error);
@@ -128,6 +136,7 @@ export default class DataLoader {
             bgTileset: bgTileset,
             hazardSprites: hazardSprites,
             tokenSprites: tokenSprites,
+            goalSprites: goalSprites,
             levelOst: levelOst
         }
     }
