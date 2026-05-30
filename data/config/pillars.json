@@ -2,7 +2,7 @@
     "levelName": "Pillars",
     "gridmap": "pillars",
     "fgTileset": "scaffold",
-    "bgTileset": "pipes",
+    "bgTileset": "snowWarning",
     "hazardSprites": "defaultHazard",
     "tokenSprites": "defaultToken",
     "goalSprites": "defaultGoal",
