@@ -80,26 +80,35 @@ export default class View {
     // Used when drawing the bg to scale the tiles correctly
     #bgTileDisplayScale = 1 / (this.#fgTileDisplaySize / 10);
 
+    #shaderData;
+    #bgCanvas;
+    #bgCtx;
+    #glCanvas;
+    #glCtx;
+    #fgCanvas;
+    #fgCtx;
+    #deadZone;
+
     constructor(clientWidth, shaderData, bgCanvas, bgCtx, glCanvas, glCtx, fgCanvas, fgCtx) {
         this.#fgTileDisplaySize = clientWidth / this.#fgTileDisplaySize;
-        this.shaderData = shaderData;
-        this.bgCanvas = bgCanvas;
-        this.bgCtx = bgCtx;
-        this.glCanvas = glCanvas;
-        this.glCtx = glCtx;
-        this.fgCanvas = fgCanvas;
-        this.fgCtx = fgCtx;
-        this.deadZone = {
-            left: this.fgCanvas.width * 0.4,
-            right: this.fgCanvas.width * 0.6,
-            top: this.fgCanvas.height * 0.4,
-            bottom: this.fgCanvas.height * 0.6
+        this.#shaderData = shaderData;
+        this.#bgCanvas = bgCanvas;
+        this.#bgCtx = bgCtx;
+        this.#glCanvas = glCanvas;
+        this.#glCtx = glCtx;
+        this.#fgCanvas = fgCanvas;
+        this.#fgCtx = fgCtx;
+        this.#deadZone = {
+            left: this.#fgCanvas.width * 0.4,
+            right: this.#fgCanvas.width * 0.6,
+            top: this.#fgCanvas.height * 0.4,
+            bottom: this.#fgCanvas.height * 0.6
         }
     }
 
     renderLoadingScreen() {
-        this.bgCtx.fillStyle = 'rgb(0, 0, 0)'
-        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        this.#bgCtx.fillStyle = 'rgb(0, 0, 0)'
+        this.#bgCtx.fillRect(0, 0, this.#bgCanvas.width, this.#bgCanvas.height);
         this.renderScreenText('Loading...', View.loadingScreenType);
     }
 
@@ -118,7 +127,7 @@ export default class View {
         controlVolumeSlider
     ) {
         View.menuBgTimeOffset += time;
-        this.fgCtx.resetTransform();
+        this.#fgCtx.resetTransform();
         this.clearShaders();
         this.clearFg();
         this.clearBg();
@@ -154,9 +163,9 @@ export default class View {
     }
 
     renderVolumeSlider(volume) {
-        const ctx = this.fgCtx;
-        const canvasWidth = this.fgCanvas.width;
-        const canvasHeight = this.fgCanvas.height;
+        const ctx = this.#fgCtx;
+        const canvasWidth = this.#fgCanvas.width;
+        const canvasHeight = this.#fgCanvas.height;
 
         const x = canvasWidth / 3;
         const y = canvasHeight / 4 * 2.91;
@@ -250,8 +259,8 @@ export default class View {
 
         this.setDemoCamera(grid);
 
-        this.fgCtx.save();
-        this.fgCtx.translate(
+        this.#fgCtx.save();
+        this.#fgCtx.translate(
             Math.floor(-View.camera.x),
             Math.floor(-View.camera.y)
         );
@@ -264,7 +273,7 @@ export default class View {
             tokenSprites
         );
 
-        this.fgCtx.restore();
+        this.#fgCtx.restore();
 
         this.renderBgTiles(bgTileset);
 
@@ -280,8 +289,8 @@ export default class View {
         const levelHeight = grid.length * this.#fgTileDisplaySize;
         const xOffset = 1.12;
 
-        View.camera.x = levelWidth - (this.fgCanvas.width) * xOffset;
-        View.camera.y = levelHeight - (this.fgCanvas.height);
+        View.camera.x = levelWidth - (this.#fgCanvas.width) * xOffset;
+        View.camera.y = levelHeight - (this.#fgCanvas.height);
     }
 
     renderPauseScreen(screenData, selectedOption, time) {
@@ -299,14 +308,14 @@ export default class View {
     renderPauseScreenOverlay() {
         const colour = 'rgba(0, 0, 0, 0.5';
 
-        this.fgCtx.fillStyle = colour;
-        this.fgCtx.fillRect(0, 0, this.fgCanvas.width, this.fgCanvas.height);
+        this.#fgCtx.fillStyle = colour;
+        this.#fgCtx.fillRect(0, 0, this.#fgCanvas.width, this.#fgCanvas.height);
     }
 
     renderScreenBackground(tileset) {
-        const bgPattern = this.bgCtx.createPattern(tileset, 'repeat');
+        const bgPattern = this.#bgCtx.createPattern(tileset, 'repeat');
         const matrix = new DOMMatrix();
-        const scale = this.bgCanvas.width / 1145;
+        const scale = this.#bgCanvas.width / 1145;
         matrix.scaleSelf(scale, scale);
 
         const scrollSpeedModifier = -30;
@@ -318,20 +327,20 @@ export default class View {
 
         bgPattern.setTransform(matrix);
 
-        this.bgCtx.clearRect(
+        this.#bgCtx.clearRect(
             0, 0,
-            this.bgCanvas.width,
-            this.bgCanvas.height
+            this.#bgCanvas.width,
+            this.#bgCanvas.height
         )
 
-        this.bgCtx.fillStyle = bgPattern;
-        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        this.#bgCtx.fillStyle = bgPattern;
+        this.#bgCtx.fillRect(0, 0, this.#bgCanvas.width, this.#bgCanvas.height);
     }
 
     renderScreenRect(type) {
-        const ctx = this.fgCtx;
-        const canvasWidth = this.fgCanvas.width;
-        const canvasHeight = this.fgCanvas.height;
+        const ctx = this.#fgCtx;
+        const canvasWidth = this.#fgCanvas.width;
+        const canvasHeight = this.#fgCanvas.height;
         const optionsWidth = canvasWidth / View.optionsWidth;
         const dialogueHeight = canvasHeight / View.dialogueHeight * 2;
 
@@ -352,8 +361,8 @@ export default class View {
     }
 
     renderScreenLayout(type) {
-        const canvasWidth = this.fgCanvas.width;
-        const canvasHeight = this.fgCanvas.height;
+        const canvasWidth = this.#fgCanvas.width;
+        const canvasHeight = this.#fgCanvas.height;
         const optionsWidth = canvasWidth / View.optionsWidth;
         const dialogueHeight = canvasHeight / View.dialogueHeight * 2;
 
@@ -394,15 +403,15 @@ export default class View {
     }
 
     renderScreenText(text, type) {
-        const ctx = this.fgCtx;
+        const ctx = this.#fgCtx;
         const colour = View.menuTextColour;
-        const canvasWidth = this.fgCanvas.width;
-        const canvasHeight = this.fgCanvas.height;
+        const canvasWidth = this.#fgCanvas.width;
+        const canvasHeight = this.#fgCanvas.height;
         const textXOffset = 1.05;
         const textYOffset = 1.09;
         const titleXOffset = 1.1;
         const titleYOffset = 1.1;
-        let newLineYOffset = this.fgCanvas.height / 16;
+        let newLineYOffset = this.#fgCanvas.height / 16;
         const textSize = canvasWidth / 24;
         const font = View.menuFont;
         let x;
@@ -454,9 +463,9 @@ export default class View {
     }
 
     renderScreenOptions(options, type, selectedOption, screenName, controlVolumeSlider) {
-        const ctx = this.fgCtx;
-        const canvasWidth = this.fgCanvas.width;
-        const canvasHeight = this.fgCanvas.height;
+        const ctx = this.#fgCtx;
+        const canvasWidth = this.#fgCanvas.width;
+        const canvasHeight = this.#fgCanvas.height;
         const returnOption = View.returnOptionString;
         let x = (canvasWidth / 64) * 1.4;
         let y = canvasHeight / 16;
@@ -559,9 +568,9 @@ export default class View {
     }
 
     drawCursor(x, y, index, offSet, type) {
-        const ctx = this.fgCtx;
-        const canvasWidth = this.fgCanvas.width;
-        const canvasHeight = this.fgCanvas.height;
+        const ctx = this.#fgCtx;
+        const canvasWidth = this.#fgCanvas.width;
+        const canvasHeight = this.#fgCanvas.height;
         let xStart = x / 3;
         let xStep = xStart + canvasWidth / 96;
         let yStart = y + (offSet * index);
@@ -612,7 +621,7 @@ export default class View {
     }
 
     drawLayoutLine(xStart, xEnd, yStart, yEnd) {
-        const ctx = this.fgCtx;
+        const ctx = this.#fgCtx;
         const lineWidth = View.menuLineWidth;
         const colour = View.menuLineColour;
 
@@ -643,10 +652,10 @@ export default class View {
 
         this.clearFg();
 
-        this.fgCtx.save();
-        this.bgCtx.save();
+        this.#fgCtx.save();
+        this.#bgCtx.save();
 
-        this.fgCtx.translate(
+        this.#fgCtx.translate(
             Math.floor(-View.camera.x), 
             Math.floor(-View.camera.y)
         );
@@ -669,8 +678,8 @@ export default class View {
 
         this.renderBgTiles(bgTileset);
 
-        this.fgCtx.restore();
-        this.bgCtx.restore();
+        this.#fgCtx.restore();
+        this.#bgCtx.restore();
 
         this.updateShader(
             (performance.now() - shaderTime) * 0.001, 
@@ -692,24 +701,24 @@ export default class View {
         const playerScreenX = playerWorldX - View.camera.x;
         const playerScreenY = playerWorldY - View.camera.y;
 
-        if (playerScreenX < this.deadZone.left) {
-            View.camera.x -= (this.deadZone.left - playerScreenX);
+        if (playerScreenX < this.#deadZone.left) {
+            View.camera.x -= (this.#deadZone.left - playerScreenX);
         }
 
-        if (playerScreenX > this.deadZone.right) {
-            View.camera.x += (playerScreenX - this.deadZone.right);
+        if (playerScreenX > this.#deadZone.right) {
+            View.camera.x += (playerScreenX - this.#deadZone.right);
         }
 
-        if (playerScreenY < this.deadZone.top) {
-            View.camera.y -= (this.deadZone.top - playerScreenY);
+        if (playerScreenY < this.#deadZone.top) {
+            View.camera.y -= (this.#deadZone.top - playerScreenY);
         }
 
-        if (playerScreenY > this.deadZone.bottom) {
-            View.camera.y += (playerScreenY - this.deadZone.bottom);
+        if (playerScreenY > this.#deadZone.bottom) {
+            View.camera.y += (playerScreenY - this.#deadZone.bottom);
         }
 
-        const maxCamX = Math.max(0, levelWidth - this.fgCanvas.width);
-        const maxCamY = Math.max(0, levelHeight - this.fgCanvas.height);
+        const maxCamX = Math.max(0, levelWidth - this.#fgCanvas.width);
+        const maxCamY = Math.max(0, levelHeight - this.#fgCanvas.height);
 
         View.camera.x = Math.floor(
             Math.max(0, Math.min(View.camera.x, maxCamX))
@@ -737,7 +746,7 @@ export default class View {
             sx = 16 * this.#tileUpscale;
         }
 
-        this.fgCtx.drawImage(
+        this.#fgCtx.drawImage(
             sprite,
             sx, sy,
             this.#tileSize * this.#tileUpscale,
@@ -754,8 +763,8 @@ export default class View {
     }
 
     renderHitbox(pos, dimensions) {
-        this.fgCtx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-        this.fgCtx.fillRect(
+        this.#fgCtx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+        this.#fgCtx.fillRect(
             pos.x * this.#fgTileDisplaySize,
             pos.y * this.#fgTileDisplaySize,
             dimensions.width * this.#fgTileDisplaySize,
@@ -770,7 +779,7 @@ export default class View {
 
                 if (grid[y][x] === null || grid[y][x].type !== View.tileIdentifier) {continue;}
 
-                this.fgCtx.drawImage(
+                this.#fgCtx.drawImage(
 
                     // image
                     tileset,
@@ -816,7 +825,7 @@ export default class View {
                 }
 
                 if (image) {
-                    this.fgCtx.drawImage(
+                    this.#fgCtx.drawImage(
                         image,
 
                         grid[y][x].pos.x * this.#fgTileDisplaySize,
@@ -832,7 +841,7 @@ export default class View {
     }
 
     renderBgTiles(tileset) {
-        const bgPattern = this.bgCtx.createPattern(tileset, 'repeat');
+        const bgPattern = this.#bgCtx.createPattern(tileset, 'repeat');
         const matrix = new DOMMatrix();
         matrix.scaleSelf(this.#bgTileDisplayScale, this.#bgTileDisplayScale);
 
@@ -849,12 +858,12 @@ export default class View {
 
         bgPattern.setTransform(matrix);
 
-        this.bgCtx.fillStyle = bgPattern;
-        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        this.#bgCtx.fillStyle = bgPattern;
+        this.#bgCtx.fillRect(0, 0, this.#bgCanvas.width, this.#bgCanvas.height);
     }
 
     updateShader(time, playerPos, playerDimensions) {
-        const gl = this.glCtx;
+        const gl = this.#glCtx;
         const playerScreenX =
             (playerPos.x + playerDimensions.width / 2) * 
             this.#fgTileDisplaySize - View.camera.x;
@@ -862,21 +871,21 @@ export default class View {
             (playerPos.y + playerDimensions.height / 2) * 
             this.#fgTileDisplaySize - View.camera.y;
 
-        gl.useProgram(this.shaderData.program);
+        gl.useProgram(this.#shaderData.program);
 
-        gl.uniform1f(this.shaderData.uniforms.time, time);
+        gl.uniform1f(this.#shaderData.uniforms.time, time);
         gl.uniform2f(
-            this.shaderData.uniforms.resolution,
-            this.glCanvas.width,
-            this.glCanvas.height
+            this.#shaderData.uniforms.resolution,
+            this.#glCanvas.width,
+            this.#glCanvas.height
         );
         gl.uniform2f(
-            this.shaderData.uniforms.playerCoord,
+            this.#shaderData.uniforms.playerCoord,
             playerScreenX,
             playerScreenY
         )
 
-        gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
+        gl.viewport(0, 0, this.#glCanvas.width, this.#glCanvas.height);
 
         gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -884,15 +893,15 @@ export default class View {
     }
 
     clearFg() {
-        this.fgCtx.clearRect(0, 0, this.fgCanvas.width, this.fgCanvas.height);
+        this.#fgCtx.clearRect(0, 0, this.#fgCanvas.width, this.#fgCanvas.height);
     }
 
     clearBg() {
-        this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        this.#bgCtx.clearRect(0, 0, this.#bgCanvas.width, this.#bgCanvas.height);
     }
 
     clearShaders() {
-        this.glCtx.clearColor(0, 0, 0, 0);
-        this.glCtx.clear(this.glCtx.COLOR_BUFFER_BIT);
+        this.#glCtx.clearColor(0, 0, 0, 0);
+        this.#glCtx.clear(this.#glCtx.COLOR_BUFFER_BIT);
     }
 }

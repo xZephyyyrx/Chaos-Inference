@@ -281,8 +281,13 @@ export default class GameController {
     }
 
     handleMusic() {
+
+        const winScreen = 'win';
+
         if (this.#game.state.enableSound) {
-            if (!this.#game.state.inLevel) {
+            if (!this.#game.state.inLevel &&
+                this.#game.currentMenuScreen.type !== winScreen
+            ) {
                 if (this.#currentOst !== this.#titleOst ||
                     this.#currentOst.currentTime === 0
                 ) {

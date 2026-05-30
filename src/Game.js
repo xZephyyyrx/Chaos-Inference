@@ -577,6 +577,10 @@ export default class Game {
         return this.#state;
     }
 
+    get currentMenuScreen() {
+        return this.#currentMenuScreen;
+    }
+
     get currentMenuSelection() {
         return this.#currentMenuSelection;
     }
