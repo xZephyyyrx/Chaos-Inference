@@ -226,7 +226,8 @@ export default class GameController {
                 this.#tilemap,
                 this.#currentHazardSprites,
                 this.#currentTokenSprites,
-                deltaTime
+                this.#game.state.gameVolume,
+                this.#game.state.controlVolumeSlider
             );
         }
     }
@@ -282,13 +283,16 @@ export default class GameController {
     handleMusic() {
         if (this.#game.state.enableSound) {
             if (!this.#game.state.inLevel) {
-                if (this.#currentOst !== this.#titleOst) {
+                if (this.#currentOst !== this.#titleOst ||
+                    this.#currentOst.currentTime === 0
+                ) {
 
                     if (this.#currentOst) {
                         this.#currentOst.pause();
                         this.#currentOst.currentTime = 0;
                     }
                     this.#currentOst = this.#titleOst;
+                    this.#currentOst.currentTime = 0.001;
                     this.#currentOst.play();
                 }
             } else {
@@ -300,6 +304,27 @@ export default class GameController {
                     }
                     this.#currentOst = this.#currentLevelOst;
                     this.#currentOst.play();
+                }
+            }
+        } else {
+            if (this.#currentOst) {
+                this.#currentOst.pause();
+                this.#currentOst.currentTime = 0;
+            }
+        }
+
+        this.handleMusicVolume();
+    }
+
+    handleMusicVolume() {
+        if (this.#currentOst) {
+            if (this.#currentOst.volume !== this.#game.state.gameVolume) {
+                if (this.#game.state.gameVolume > 1) {
+                    this.#currentOst.volume = 1;
+                } else if (this.#game.state.gameVolume < 0) {
+                    this.#currentOst.volume = 0;
+                } else {
+                    this.#currentOst.volume = this.#game.state.gameVolume;
                 }
             }
         }

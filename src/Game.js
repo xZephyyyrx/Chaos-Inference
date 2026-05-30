@@ -18,7 +18,14 @@ export default class Game {
         WINSCREENRETURN: 'Return to Title Screen',
         WINSCREENCONTINUE: 'Continue to next Level',
         PLAYSOUND: 'Yes',
-        DISABLESOUND: 'No'
+        DISABLESOUND: 'No',
+        OPTIONS: 'Options',
+        ENABLESOUNDOPTION: 'Enable Sound',
+        DISABLESOUNDOPTION: 'Disable Sound',
+        CONFIRMVOLUMEOPTION: 'Confirm',
+        CANCELVOLUMEOPTION: 'Cancel',
+        ADJUSTVOLUME: 'Adjust Volume',
+        SLIDER: 'Slider Object'
     });
 
     static screenNames = Object.freeze({
@@ -28,7 +35,8 @@ export default class Game {
         SOUND: 'soundOptions',
         PAUSE: 'pauseScreen',
         LEVEL: 'levelSelect',
-        WIN: 'winScreen'
+        WIN: 'winScreen',
+        OPTIONS: 'optionsScreen'
     });
 
     static screenTypes = Object.freeze({
@@ -38,10 +46,15 @@ export default class Game {
         SOUND: 'sound',
         PAUSE: 'pause',
         LEVEL: 'level',
-        WIN: 'win'
+        WIN: 'win',
+        OPTIONS: 'options'
     });
 
     static initialMenuScreen = Game.screenNames.SOUND;
+
+    static volumeAdjustSpeed = 0.007;
+
+    static defaultVolume = 0.5;
 
     #allLevels = [];
     #allMenuScreens = [];
@@ -52,9 +65,12 @@ export default class Game {
     #state = {
         inLevel: false,
         enableSound: false,
+        gameVolume: Game.defaultVolume,
+        controlVolumeSlider: false,
         paused: false,
         levelComplete: false
     };
+    #previousGameVolume = Game.defaultVolume;
     #player;
     #arrowDownRelease = true;
     #arrowUpRelease = true;
@@ -99,6 +115,12 @@ export default class Game {
             options: this.#currentMenuScreen.options,
             text: this.#currentMenuScreen.text
         }
+    }
+
+    updateOptionsScreen() {
+        const screen = this.#currentMenuScreen;
+        screen.options[0] = (this.#state.enableSound) ? 
+            Game.options.DISABLESOUNDOPTION : Game.options.ENABLESOUNDOPTION;
     }
 
     runPauseScreen(keys) {
@@ -263,6 +285,7 @@ export default class Game {
     handleMenuSelections(keys) {
         const currentScreen = this.#currentMenuScreen;
         const selection = this.#currentMenuSelection;
+
         if (keys['ArrowDown'] && 
             this.#arrowDownRelease && 
             currentScreen.type !== Game.screenTypes.SOUND
@@ -273,6 +296,20 @@ export default class Game {
             } else {
                 index += 1;
             }
+
+            if (currentScreen.type === Game.screenTypes.OPTIONS) {
+                if (!this.#state.controlVolumeSlider ) {
+                    while(currentScreen.options[index] === Game.options.CONFIRMVOLUMEOPTION ||
+                        currentScreen.options[index] === Game.options.CANCELVOLUMEOPTION ||
+                        currentScreen.options[index] === Game.options.SLIDER
+                    ) {
+                        index += 1;
+                    }
+                } else if (selection !== Game.options.SLIDER) {
+                    index = currentScreen.options.indexOf(Game.options.SLIDER);
+                }
+            }
+                
             this.#currentMenuSelection = currentScreen.options[index];
             this.#arrowDownRelease = false;
         }
@@ -287,13 +324,60 @@ export default class Game {
             } else {
                 index -= 1;
             }
+
+            if (currentScreen.type === Game.screenTypes.OPTIONS) {
+                
+                if (!this.state.controlVolumeSlider) {
+                    while(currentScreen.options[index] === Game.options.CONFIRMVOLUMEOPTION ||
+                        currentScreen.options[index] === Game.options.CANCELVOLUMEOPTION ||
+                        currentScreen.options[index] === Game.options.SLIDER
+                    ) {
+                        index -= 1;
+                    }
+                } else if (selection === Game.options.SLIDER) {
+                    index = (currentScreen.options.indexOf(Game.options.SLIDER)) + 1;
+                } else if (selection === Game.options.CANCELVOLUMEOPTION) {
+                    index = currentScreen.options.indexOf(Game.options.SLIDER);
+                }
+            }
+
             this.#currentMenuSelection = currentScreen.options[index];
             this.#arrowUpRelease = false;
         }
 
         if ((keys['z'] || keys['Z']) && this.#zRelease) {
             if (currentScreen.type !== Game.screenTypes.SOUND) {
-                this.handleScreenChange();
+                if (selection === Game.options.ENABLESOUNDOPTION) {
+                    this.#state.enableSound = true;
+                    this.updateOptionsScreen();
+                    this.#currentMenuSelection = this.#currentMenuScreen.options[0];
+                } else if (selection === Game.options.DISABLESOUNDOPTION) {
+                    this.#state.enableSound = false;
+                    this.updateOptionsScreen();
+                    this.#currentMenuSelection = this.#currentMenuScreen.options[0];
+                } else if (selection === Game.options.ADJUSTVOLUME ||
+                           selection === Game.options.CANCELVOLUMEOPTION
+                ) {
+                    if (this.#state.controlVolumeSlider) {
+                        if (selection === Game.options.CANCELVOLUMEOPTION) {
+                            this.#state.gameVolume = this.#previousGameVolume;
+                        }
+                        this.#state.controlVolumeSlider = false;
+                        this.#currentMenuSelection = currentScreen.options[0];
+                    } else {
+                        this.#previousGameVolume = this.#state.gameVolume;
+                        this.#state.controlVolumeSlider = true;
+                        const sliderIndex = currentScreen.options.indexOf(Game.options.SLIDER);
+                        this.#currentMenuSelection = currentScreen.options[sliderIndex];
+                    }
+                } else if (selection === Game.options.CONFIRMVOLUMEOPTION &&
+                           currentScreen.type === Game.screenTypes.OPTIONS
+                ) {
+                    this.#state.controlVolumeSlider = false;
+                    this.#currentMenuSelection = currentScreen.options[0];
+                } else {
+                    this.handleScreenChange();
+                }
             } else {
                 if (selection === Game.options.PLAYSOUND) {
                     this.handleScreenChange();
@@ -307,27 +391,69 @@ export default class Game {
         }
 
         if (keys['ArrowLeft'] && 
-            this.#arrowLeftRelease &&
-            currentScreen.type === Game.screenTypes.SOUND) {
-            let index = currentScreen.options.indexOf(selection);
-            if (index === 0) {
-                this.#currentMenuSelection = currentScreen.options[1];
-            }  else {
-                this.#currentMenuSelection = currentScreen.options[0];
+            this.#arrowLeftRelease) {
+
+            let index = currentScreen.options.indexOf(selection);;
+
+            if (currentScreen.type === Game.screenTypes.SOUND) {
+                if (index === 0) {
+                    this.#currentMenuSelection = currentScreen.options[1];
+                }  else {
+                    this.#currentMenuSelection = currentScreen.options[0];
+                }
+                
+            } else if (currentScreen.type === Game.screenTypes.OPTIONS &&
+                       this.#state.controlVolumeSlider
+                ) {
+                if (selection === Game.options.CONFIRMVOLUMEOPTION) {
+                    this.#currentMenuSelection = currentScreen.options[index + 1];
+                } else if (selection === Game.options.CANCELVOLUMEOPTION) {
+                    this.#currentMenuSelection = currentScreen.options[index - 1];
+                }
             }
+
             this.#arrowLeftRelease = false;
         }
 
         if (keys['ArrowRight'] && 
-            this.#arrowRightRelease &&
-            currentScreen.type === Game.screenTypes.SOUND) {
+            this.#arrowRightRelease) {
+
             let index = currentScreen.options.indexOf(selection);
-            if (index === 0) {
-                this.#currentMenuSelection = currentScreen.options[1];
-            }  else {
-                this.#currentMenuSelection = currentScreen.options[0];
+
+            if (currentScreen.type === Game.screenTypes.SOUND) {
+                
+                if (index === 0) {
+                    this.#currentMenuSelection = currentScreen.options[1];
+                }  else {
+                    this.#currentMenuSelection = currentScreen.options[0];
+                }
+            } else if (currentScreen.type === Game.screenTypes.OPTIONS &&
+                       this.#state.controlVolumeSlider
+                ) {
+                if (selection === Game.options.CONFIRMVOLUMEOPTION) {
+                    this.#currentMenuSelection = currentScreen.options[index + 1];
+                } else if (selection === Game.options.CANCELVOLUMEOPTION) {
+                    this.#currentMenuSelection = currentScreen.options[index - 1];
+                }
             }
+            
             this.#arrowRightRelease = false;
+        }
+
+        if (keys['ArrowLeft'] && selection === Game.options.SLIDER) {
+            if (this.#state.gameVolume > 0) {
+                this.#state.gameVolume -= Game.volumeAdjustSpeed;
+            } else {
+                this.#state.gameVolume = 0;
+            }
+        }
+
+        if (keys['ArrowRight'] && selection === Game.options.SLIDER) {
+            if (this.#state.gameVolume < 1) {
+                this.#state.gameVolume += Game.volumeAdjustSpeed;
+            } else {
+                this.#state.gameVolume = 1;
+            }
         }
 
         if (!keys['ArrowDown']) {
@@ -408,6 +534,10 @@ export default class Game {
                     this.#state.levelComplete = false;
                     this.#state.inLevel = true;
                 }
+            } else if (selection === Game.options.OPTIONS) {
+                this.setCurrentScreen(`${Game.screenNames.OPTIONS}`);
+                this.updateOptionsScreen();
+                this.#currentMenuSelection = this.#currentMenuScreen.options[0];
             }
         } else {
             this.handleLevelSelect(screen, selection);

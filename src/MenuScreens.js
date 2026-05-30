@@ -31,7 +31,8 @@ export default class MenuScreens {
                 'Level Select',
                 'View Tutorial',
                 'View Story',
-                'Options'
+                'Options',
+                'Credits'
             ],
             text: 'Chaos Inference'
         },
@@ -39,6 +40,22 @@ export default class MenuScreens {
         levelSelect: {
             type: MenuScreens.menuTypes.LEVEL,
             options: [
+                [
+                    'Return to',
+                    'Title Screen'
+                ]
+            ],
+            text: ''
+        },
+
+        optionsScreen: {
+            type: MenuScreens.menuTypes.OPTIONS,
+            options: [
+                'Enable Sound',
+                'Adjust Volume',
+                'Slider Object',
+                'Confirm',
+                'Cancel',
                 [
                     'Return to',
                     'Title Screen'

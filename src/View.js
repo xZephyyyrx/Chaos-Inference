@@ -10,6 +10,7 @@ export default class View {
     static levelMenuType = 'level';
     static loadingScreenType = 'loading';
     static winMenuType = 'win';
+    static optionsMenuType = 'options';
 
     static menuBgTimeOffset = 0;
 
@@ -19,6 +20,14 @@ export default class View {
     static optionsWidth = 3.3;
 
     static returnOptionString = 'Return to Title Screen';
+    static optionsOptionString = 'Options';
+    static creditsOptionString = 'Credits';
+    static volumeSliderConfirmOption = 'Confirm';
+    static volumeSliderCancelOption = 'Cancel';
+    static sliderMenuOption = 'Slider Object';
+
+    static sliderColour = 'rgb(255, 255, 255)';
+    static sliderSelectorColour = View.sliderColour;
 
     // Size of dialogue box is screenHeight / dialogue height
     static dialogueHeight = 3;
@@ -104,7 +113,9 @@ export default class View {
         fgTileset, 
         fgTilemap, 
         hazardSprites, 
-        tokenSprites
+        tokenSprites,
+        gameVolume,
+        controlVolumeSlider
     ) {
         View.menuBgTimeOffset += time;
         this.fgCtx.resetTransform();
@@ -129,13 +140,102 @@ export default class View {
         }
         this.renderScreenRect(screenData.type);
         this.renderScreenLayout(screenData.type);
+        if (screenData.type === View.optionsMenuType) {
+            this.renderVolumeSlider(gameVolume);
+        }
         this.renderScreenText(screenData.text, screenData.type);
         this.renderScreenOptions(
             screenData.options, 
             screenData.type,
             selectedOption,
-            screenData.name
+            screenData.name,
+            controlVolumeSlider
         );
+    }
+
+    renderVolumeSlider(volume) {
+        const ctx = this.fgCtx;
+        const canvasWidth = this.fgCanvas.width;
+        const canvasHeight = this.fgCanvas.height;
+
+        const x = canvasWidth / 3;
+        const y = canvasHeight / 4 * 2.91;
+        const width = canvasWidth / 1.57;
+        const height = canvasHeight / 14;
+        
+        const barColour = 'rgb(255, 255, 255)';
+
+        this.renderVolumeSliderBar(
+            ctx, 
+            canvasWidth,
+            canvasHeight,
+            barColour,
+            x,
+            y,
+            width,
+            height
+        );
+
+        this.renderVolumeSelection(
+            ctx,
+            canvasWidth,
+            canvasHeight,
+            x,
+            y,
+            width,
+            height,
+            volume
+        )
+    }
+
+    renderVolumeSliderBar(
+        ctx, 
+        canvasWidth,
+        canvasHeight,
+        colour,
+        x,
+        y,
+        width,
+        height
+    ) {
+        
+        const margin = canvasWidth / 256;
+        const sqrSize = canvasWidth / 128;
+
+        ctx.fillStyle = colour;
+        ctx.fillRect(x, y, width, height);
+        ctx.fillStyle = View.menuBgColour;
+        ctx.fillRect(x + margin, y + margin, width - margin * 2, height - margin * 2)
+        ctx.fillStyle = colour;
+        for (let i = 1; i < 10; i++) {
+            ctx.fillRect(
+                x + (width / 10 * i) - sqrSize / 2, 
+                y + height / 2 - sqrSize / 2, 
+                sqrSize, 
+                sqrSize
+            )
+        }
+    }
+
+    renderVolumeSelection(
+        ctx,
+        canvasWidth,
+        canvasHeight,
+        x,
+        y,
+        width,
+        height,
+        volume
+    ) {
+        const selectorSize = canvasWidth / 16;
+
+        ctx.fillStyle = View.sliderSelectorColour;
+        ctx.fillRect(
+            x + (width * volume) - (selectorSize / 4), 
+            y + height / 2 - selectorSize / 2, 
+            selectorSize / 2, 
+            selectorSize
+        )
     }
 
     renderLevelDemo(
@@ -271,7 +371,8 @@ export default class View {
             )
 
         } else if (type === View.tutorialMenuType ||
-                   type === View.storyMenuType 
+                   type === View.storyMenuType ||
+                   type === View.optionsMenuType
         ) {
             
             // Options Panel
@@ -327,6 +428,10 @@ export default class View {
             ctx.font = `${textSize / 2}px ${font}`;
             x = (canvasWidth / View.optionsWidth) * textXOffset * 1.25;
             y = canvasHeight - (newLineYOffset / 2);
+        } else if (type === View.optionsMenuType) {
+            ctx.font = `${textSize / 2}px ${font}`;
+            x = (canvasWidth / View.optionsWidth) * textXOffset;
+            y = (canvasHeight / View.dialogueHeight * 2) * textYOffset;
         } else {
             ctx.font = `${textSize / 2}px ${font}`;
             x = (canvasWidth / View.optionsWidth) * textXOffset;
@@ -348,7 +453,7 @@ export default class View {
         }
     }
 
-    renderScreenOptions(options, type, selectedOption, screenName) {
+    renderScreenOptions(options, type, selectedOption, screenName, controlVolumeSlider) {
         const ctx = this.fgCtx;
         const canvasWidth = this.fgCanvas.width;
         const canvasHeight = this.fgCanvas.height;
@@ -375,6 +480,12 @@ export default class View {
 
         ctx.font = `${textSize}px ${font}`;
 
+        if (selectedOption === View.sliderMenuOption) {
+            View.sliderSelectorColour = View.menuTextHighlight;
+        }  else {
+            View.sliderSelectorColour = View.sliderColour;
+        }
+
         Object.values(options).forEach((option, index) => {
             if (option === selectedOption) {
                 if (option !== View.previousMenuOption ||
@@ -385,11 +496,22 @@ export default class View {
                 View.previousMenuOption = option;
                 View.previousScreenName = screenName;
                 ctx.fillStyle = highlight;
+
                 if (type !== View.soundMenuType &&
                     type !== View.pauseMenuType
                 ) {
                     if (!Array.isArray(option)) {
-                        this.drawCursor(x, y, index, newLineYOffset, type);
+                        if (option === View.optionsOptionString) {
+                            this.drawCursor(x, 0, 1, returnYOffset, type);
+                        } else if (option === View.creditsOptionString) {
+                            this.drawCursor(x, 0, 1, returnYOffset + newLineYOffset / 1.12, type);
+                        } else if (option === View.volumeSliderConfirmOption) {
+                            this.drawCursor(x + canvasWidth, canvasHeight / 34, 1, returnYOffset, type);
+                        } else if (option === View.volumeSliderCancelOption) {
+                            this.drawCursor(x + canvasWidth * 2.385, canvasHeight / 34, 1, returnYOffset, type);
+                        } else if (option !== View.sliderMenuOption) {
+                            this.drawCursor(x, y, index, newLineYOffset, type);
+                        }
                     } else {
                         this.drawCursor(x, 0, 1, returnYOffset, type);
                     }
@@ -404,7 +526,23 @@ export default class View {
                 type !== View.pauseMenuType
             ) {
                 if (!Array.isArray(option)) {
-                    ctx.fillText(option, x, y + (newLineYOffset * index));
+                    if (option === View.optionsOptionString) {
+                        ctx.fillText(option, x, returnYOffset);
+                    } else if (option === View.creditsOptionString) {
+                        ctx.fillText(option, x, canvasHeight - (y * 0.5));
+                    } else if (option === View.volumeSliderConfirmOption) {
+                        if (!controlVolumeSlider) {
+                            ctx.fillStyle = View.menuBgColour;
+                        }
+                        ctx.fillText(option, x + (canvasWidth / 3), y * 15);
+                    } else if (option === View.volumeSliderCancelOption) {
+                        if (!controlVolumeSlider) {
+                            ctx.fillStyle = View.menuBgColour;
+                        }
+                        ctx.fillText(option, x + (canvasWidth / 3) * 2.38, y * 15);
+                    } else if (option !== View.sliderMenuOption) {
+                        ctx.fillText(option, x, y + (newLineYOffset * index));
+                    }
                 } else {
                     ctx.fillText(option[0], x, returnYOffset);
                     ctx.fillText(option[1], x - (canvasWidth / 300), canvasHeight - (y * 0.5));
