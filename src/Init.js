@@ -7,16 +7,16 @@ import Game from "./Game.js";
 
 // INITIALIZE CANVAS ELEMENTS //
 
-const fgCanvasId = 'foreground-canvas';
-const fgCanvasType = '2d';
+const fgCanvasId = "foreground-canvas";
+const fgCanvasType = "2d";
 const fgIsGl = false;
 
-const bgCanvasId = 'background-canvas';
-const bgCanvasType = '2d';
+const bgCanvasId = "background-canvas";
+const bgCanvasType = "2d";
 const bgIsGl = false;
 
-const glCanvasId = 'shader-canvas';
-const glCanvasType = 'webgl';
+const glCanvasId = "shader-canvas";
+const glCanvasType = "webgl";
 const glIsGl = true;
 
 const bgCanvas = InitializeCanvases.loadCanvas(bgCanvasId);
@@ -43,15 +43,19 @@ const dataloader = new DataLoader();
 // CREATE AND COMPILE INITIAL SHADERS //
 
 async function compileShaders() {
+  const vertexShader = await dataloader.importShaderData("vertexShader");
+  const fragmentShader = await dataloader.importShaderData("fragmentShader");
 
-    const vertexShader = await dataloader.importShaderData('vertexShader');
-    const fragmentShader = await dataloader.importShaderData('fragmentShader');
-
-    try {
-        return CompileShaders.initializeShaders(glCanvas, glCtx, vertexShader, fragmentShader);
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    return CompileShaders.initializeShaders(
+      glCanvas,
+      glCtx,
+      vertexShader,
+      fragmentShader,
+    );
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 const shaderData = await compileShaders();
@@ -62,14 +66,14 @@ const shaderData = await compileShaders();
 const clientWidth = fgCanvas.clientWidth;
 
 const view = new View(
-    clientWidth,
-    shaderData,
-    bgCanvas, 
-    bgCtx, 
-    glCanvas, 
-    glCtx, 
-    fgCanvas,
-    fgCtx
+  clientWidth,
+  shaderData,
+  bgCanvas,
+  bgCtx,
+  glCanvas,
+  glCtx,
+  fgCanvas,
+  fgCtx,
 );
 
 // INITIALIZE GAME //

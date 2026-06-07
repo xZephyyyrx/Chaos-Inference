@@ -1,16 +1,16 @@
 export default class Goal {
-    #pos;
-    #type = 'Goal';
+  #pos;
+  #type = "Goal";
 
-    constructor(pos) {
-        this.#pos = pos;
-    }
+  constructor(pos) {
+    this.#pos = pos;
+  }
 
-    get pos() {
-        return this.#pos;
-    }
+  get pos() {
+    return this.#pos;
+  }
 
-    get type() {
-        return this.#type;
-    }
+  get type() {
+    return this.#type;
+  }
 }

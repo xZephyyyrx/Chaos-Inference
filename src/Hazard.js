@@ -1,31 +1,31 @@
 export default class Hazard {
-    #pos;
-    #activeState = true;
-    #key;
-    #type = 'Hazard';
+  #pos;
+  #activeState = true;
+  #key;
+  #type = "Hazard";
 
-    constructor(pos, key) {
-        this.#pos = pos;
-        this.#key = key;
-    }
+  constructor(pos, key) {
+    this.#pos = pos;
+    this.#key = key;
+  }
 
-    get pos() {
-        return this.#pos;
-    }
+  get pos() {
+    return this.#pos;
+  }
 
-    get key() {
-        return this.#key;
-    }
+  get key() {
+    return this.#key;
+  }
 
-    get activeState() {
-        return this.#activeState;
-    }
+  get activeState() {
+    return this.#activeState;
+  }
 
-    get type() {
-        return this.#type;
-    }
+  get type() {
+    return this.#type;
+  }
 
-    set activeState(newState) {
-        this.#activeState = newState;
-    }
+  set activeState(newState) {
+    this.#activeState = newState;
+  }
 }
