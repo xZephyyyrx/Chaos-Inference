@@ -93,7 +93,12 @@ export default class MenuScreens {
     tutorial6: {
       type: MenuScreens.menuTypes.TUTORIAL,
       options: ["Next Page", "Previous Page", ["Return to", "Title Screen"]],
-      text: ["Collecting yellow tokens will", "disable some hazards."],
+      text: [
+        "Collecting yellow tokens will",
+        "disable some hazards.",
+        "You do not need to collect all",
+        "tokens to complete a level.",
+      ],
     },
 
     tutorial7: {
@@ -161,7 +166,7 @@ export default class MenuScreens {
       options: ["Next Page", "Previous Page", ["Return to", "Title Screen"]],
       text: [
         "In this game you play as a young",
-        "content engineer named Hazel who",
+        "context engineer named Hazel who",
         "is tasked with fixing a prompt",
         "gone wrong.",
       ],
@@ -171,11 +176,11 @@ export default class MenuScreens {
       type: MenuScreens.menuTypes.STORY,
       options: ["Next Page", "Previous Page", ["Return to", "Title Screen"]],
       text: [
-        "The Rulers of the city of",
-        "Avaritia failed to provide",
-        "context to their prompt and now",
-        "the city's security systems have",
-        "gone rogue.",
+        "The Rulers of the city of Avaria",
+        "failed to provide context to ",
+        "their prompt and now the city's",
+        "security systems have gone ",
+        "rogue.",
       ],
     },
 
